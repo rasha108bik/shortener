@@ -42,8 +42,6 @@ func (h *Handler) PostShortURL(ctx context.Context) http.HandlerFunc {
 		}
 		defer r.Body.Close()
 
-		fmt.Print(b)
-
 		data := string(b)
 		_, err = url.Parse(data)
 		if err != nil {
@@ -79,14 +77,17 @@ func (h *Handler) GetOriginalURL(ctx context.Context) http.HandlerFunc {
 			http.Error(w, "id is empty", http.StatusBadRequest)
 			return
 		}
-		// fmt.Printf("chi id param: %s \n", id)
+		fmt.Printf("chi id param: %s \n", id)
 		// h.logger.Sugar().Infof("id: %s", id)
 
 		url, err := h.storage.Get(id)
 		if err != nil {
-			http.Error(w, "get storage failed", http.StatusBadRequest)
+			fmt.Printf("url param: %s \n", url)
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+
+		// fmt.Printf("url param: %s \n", url)
 
 		http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 	}
