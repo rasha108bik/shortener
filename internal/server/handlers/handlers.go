@@ -10,6 +10,11 @@ import (
 	"github.com/rasha108bik/tiny_url/internal/storage"
 )
 
+type Handlers interface {
+	PostHandler() http.HandlerFunc
+	GetHandler() http.HandlerFunc
+}
+
 type handler struct {
 	storage *storage.Storage
 }

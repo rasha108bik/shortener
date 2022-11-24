@@ -7,6 +7,7 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 
+	"github.com/rasha108bik/tiny_url/internal/server"
 	"github.com/rasha108bik/tiny_url/internal/server/handlers"
 	"github.com/rasha108bik/tiny_url/internal/storage"
 )
@@ -22,10 +23,11 @@ func main() {
 
 	db := storage.New()
 	h := handlers.New(db)
+	serv := server.New(h)
 
 	r.MethodNotAllowed(handlers.URLErrorHandler)
-	r.Get("/{id}", h.GetHandler())
-	r.Post("/", h.PostHandler())
+	r.Get("/{id}", serv.Handlers.GetHandler())
+	r.Post("/", serv.Handlers.PostHandler())
 
 	err := http.ListenAndServe("127.0.0.1:8080", r)
 	if err != nil {
