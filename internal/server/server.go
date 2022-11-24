@@ -1,6 +1,8 @@
 package server
 
-import "github.com/rasha108bik/tiny_url/internal/server/handlers"
+import (
+	"github.com/rasha108bik/tiny_url/internal/server/handlers"
+)
 
 type Server struct {
 	Handlers handlers.Handlers

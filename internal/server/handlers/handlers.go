@@ -16,10 +16,10 @@ type Handlers interface {
 }
 
 type handler struct {
-	storage *storage.Storage
+	storage storage.Storage
 }
 
-func New(storage *storage.Storage) *handler {
+func New(storage storage.Storage) *handler {
 	return &handler{
 		storage: storage,
 	}

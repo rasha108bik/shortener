@@ -6,17 +6,22 @@ import (
 	"net/url"
 )
 
-type Storage struct {
+type Storage interface {
+	Save(longURL string) (string, error)
+	Get(id string) (string, error)
+}
+
+type storage struct {
 	Locations map[string]string
 }
 
-func New() *Storage {
-	return &Storage{
+func New() *storage {
+	return &storage{
 		Locations: make(map[string]string),
 	}
 }
 
-func (s *Storage) Save(longURL string) (string, error) {
+func (s *storage) Save(longURL string) (string, error) {
 	if _, err := url.ParseRequestURI(longURL); err != nil {
 		return "", err
 	}
@@ -27,7 +32,7 @@ func (s *Storage) Save(longURL string) (string, error) {
 	return newID, nil
 }
 
-func (s *Storage) Get(id string) (string, error) {
+func (s *storage) Get(id string) (string, error) {
 	if url, ok := s.Locations[id]; ok {
 		return url, nil
 	}
