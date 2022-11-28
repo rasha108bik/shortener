@@ -8,7 +8,7 @@ type Server struct {
 	Handlers handlers.Handlers
 }
 
-func New(h handlers.Handlers) *Server {
+func NewServer(h handlers.Handlers) *Server {
 	return &Server{
 		Handlers: h,
 	}

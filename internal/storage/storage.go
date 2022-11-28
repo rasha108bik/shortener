@@ -7,21 +7,21 @@ import (
 )
 
 type Storage interface {
-	Save(longURL string) (string, error)
-	Get(id string) (string, error)
+	StoreURL(longURL string) (string, error)
+	GetURLShortID(id string) (string, error)
 }
 
 type storage struct {
 	Locations map[string]string
 }
 
-func New() *storage {
+func NewStorage() *storage {
 	return &storage{
 		Locations: make(map[string]string),
 	}
 }
 
-func (s *storage) Save(longURL string) (string, error) {
+func (s *storage) StoreURL(longURL string) (string, error) {
 	if _, err := url.ParseRequestURI(longURL); err != nil {
 		return "", err
 	}
@@ -32,7 +32,7 @@ func (s *storage) Save(longURL string) (string, error) {
 	return newID, nil
 }
 
-func (s *storage) Get(id string) (string, error) {
+func (s *storage) GetURLShortID(id string) (string, error) {
 	if url, ok := s.Locations[id]; ok {
 		return url, nil
 	}

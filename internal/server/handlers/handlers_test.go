@@ -16,8 +16,8 @@ import (
 )
 
 func TestHandlers(t *testing.T) {
-	db := storage.New()
-	handler := New(db)
+	db := storage.NewStorage()
+	handler := NewHandler(db)
 
 	var shortenURL string
 	var originalURL string
@@ -27,7 +27,7 @@ func TestHandlers(t *testing.T) {
 
 		request := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(originalURL))
 		w := httptest.NewRecorder()
-		h := http.HandlerFunc(handler.PostHandler())
+		h := http.HandlerFunc(handler.CreateShortLink)
 		h(w, request)
 		result := w.Result()
 
@@ -52,7 +52,7 @@ func TestHandlers(t *testing.T) {
 
 		request := httptest.NewRequest(http.MethodGet, "/"+uri.Path[1:], nil)
 		w := httptest.NewRecorder()
-		h := http.HandlerFunc(handler.GetHandler())
+		h := http.HandlerFunc(handler.GetOriginalURL)
 
 		rctx := chi.NewRouteContext()
 		rctx.URLParams.Add("id", uri.Path[1:])

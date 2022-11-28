@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 
 	"github.com/rasha108bik/tiny_url/internal/server"
@@ -15,19 +14,13 @@ import (
 func main() {
 	r := chi.NewRouter()
 
-	// A good base middleware stack
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
+	db := storage.NewStorage()
+	h := handlers.NewHandler(db)
+	serv := server.NewServer(h)
 
-	db := storage.New()
-	h := handlers.New(db)
-	serv := server.New(h)
-
-	r.MethodNotAllowed(handlers.URLErrorHandler)
-	r.Get("/{id}", serv.Handlers.GetHandler())
-	r.Post("/", serv.Handlers.PostHandler())
+	r.MethodNotAllowed(serv.Handlers.ErrorHandler)
+	r.Get("/{id}", serv.Handlers.GetOriginalURL)
+	r.Post("/", serv.Handlers.CreateShortLink)
 
 	err := http.ListenAndServe("127.0.0.1:8080", r)
 	if err != nil {
