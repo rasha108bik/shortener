@@ -1,6 +1,8 @@
 # Binaries
 cmd/shortener/main
 cmd/shortener/shortener
+binary*
+bin*
 
 # Dependency directories (remove the comment below to include it)
 vendor/
@@ -8,7 +10,11 @@ vendor/
 # IDEs directories
 .idea
 .vscode
+.DS_Store
 
 # vim swp
 *.swp
 *.swo
+
+# files for save urls
+URLs.log

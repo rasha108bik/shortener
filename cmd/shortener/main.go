@@ -1,28 +1,71 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
-
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/rasha108bik/tiny_url/config"
+	"github.com/rasha108bik/tiny_url/internal/router"
 	"github.com/rasha108bik/tiny_url/internal/server"
 	"github.com/rasha108bik/tiny_url/internal/server/handlers"
-	"github.com/rasha108bik/tiny_url/internal/storage"
+	filestorage "github.com/rasha108bik/tiny_url/internal/storage/file"
+	storage "github.com/rasha108bik/tiny_url/internal/storage/memdb"
+	pgDB "github.com/rasha108bik/tiny_url/internal/storage/postgres"
 )
 
 func main() {
-	r := chi.NewRouter()
+	cfg := config.NewConfig()
 
-	db := storage.NewStorage()
-	h := handlers.NewHandler(db)
+	log.Printf("%+v\n", cfg)
+
+	// TODO after delete and change pgcon
+	var pgcon bool
+	if cfg.DatabaseDSN != "" {
+		pgcon = true
+	}
+	log.Printf("pgcon: %v\n", pgcon)
+
+	pg, err := pgDB.New(cfg.DatabaseDSN)
+	if err != nil {
+		log.Printf("pgDB.New: %v\n", err)
+	}
+	defer pg.Close()
+
+	if cfg.DatabaseDSN != "" {
+		driver, err := postgres.WithInstance(pg.Postgres.DB, &postgres.Config{})
+		if err != nil {
+			log.Printf("postgres.WithInstance: %v\n", err)
+		}
+
+		m, err := migrate.NewWithDatabaseInstance(
+			"file://migrations",
+			"pgx", driver)
+		if err != nil {
+			log.Printf("migrate.NewWithDatabaseInstance: %v\n", err)
+		}
+
+		err = m.Up() // or m.Step(2) if you want to explicitly set the number of migrations to run
+		if err != nil && err != migrate.ErrNoChange {
+			log.Fatal(fmt.Errorf("migrate failed: %v", err))
+		}
+	}
+
+	filestorage, err := filestorage.NewFileStorage(cfg.FileStoragePath)
+	if err != nil {
+		log.Fatal(fmt.Errorf("filestorage.NewFileStorage: %v", err))
+	}
+	defer filestorage.Close()
+
+	memDB := storage.NewMemDB()
+	h := handlers.NewHandler(cfg, memDB, filestorage, pg, pgcon)
 	serv := server.NewServer(h)
+	r := router.NewRouter(serv)
 
-	r.MethodNotAllowed(serv.Handlers.ErrorHandler)
-	r.Get("/{id}", serv.Handlers.GetOriginalURL)
-	r.Post("/", serv.Handlers.CreateShortLink)
-
-	err := http.ListenAndServe("127.0.0.1:8080", r)
+	err = http.ListenAndServe(cfg.ServerAddress, r)
 	if err != nil {
 		log.Fatal(err)
 	}
