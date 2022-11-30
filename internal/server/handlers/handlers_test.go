@@ -1,28 +1,54 @@
 package handlers
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
 
+	"github.com/caarlos0/env/v6"
 	"github.com/go-chi/chi/v5"
-	"github.com/rasha108bik/tiny_url/internal/storage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/rasha108bik/tiny_url/config"
+	"github.com/rasha108bik/tiny_url/internal/storage"
+	"github.com/rasha108bik/tiny_url/pkg/storagefile"
 )
 
 func TestHandlers(t *testing.T) {
 	db := storage.NewStorage()
-	handler := NewHandler(db)
+	var cfg config.Config
+	err := env.Parse(&cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("%+v\n", cfg)
+
+	fileName := cfg.FileStoragePath
+	producer, err := storagefile.NewProducer(fileName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer producer.Close()
+	consumer, err := storagefile.NewConsumer(fileName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer consumer.Close()
+
+	handler := NewHandler(db, &cfg, producer, consumer)
 
 	var shortenURL string
 	var originalURL string
 
-	t.Run("save	", func(t *testing.T) {
+	t.Run("save", func(t *testing.T) {
 		originalURL = "http://jqymby.biz/wruxoh/eii7bbkvbz4oj"
 
 		request := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(originalURL))
@@ -67,5 +93,32 @@ func TestHandlers(t *testing.T) {
 		assert.Equalf(t, originalURL, result.Header.Get("Location"),
 			"Несоответствие URL полученного в заголовке Location ожидаемому",
 		)
+	})
+
+	t.Run("save shorten", func(t *testing.T) {
+		reqBody, err := json.Marshal(map[string]string{
+			"url": "http://fsdkfkldshfjs.ru/test",
+		})
+		require.NoError(t, err)
+
+		request := httptest.NewRequest(http.MethodPost, "/api/shorten", bytes.NewBuffer(reqBody))
+		w := httptest.NewRecorder()
+		h := http.HandlerFunc(handler.CreateShorten)
+		h(w, request)
+		result := w.Result()
+
+		err = result.Body.Close()
+		require.NoError(t, err)
+
+		assert.Equal(t, http.StatusCreated, result.StatusCode)
+		assert.Equal(t, "application/json", result.Header.Get("Content-Type"))
+
+		m := RespReqCreateShorten{}
+		err = json.NewDecoder(result.Body).Decode(&m)
+		require.NoError(t, err)
+
+		// проверяем URL на валидность
+		_, urlParseErr := url.Parse(m.Result)
+		assert.NoErrorf(t, urlParseErr, "cannot parsee URL: %s ", m.Result, err)
 	})
 }
