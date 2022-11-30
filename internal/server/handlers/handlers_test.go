@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -22,7 +24,7 @@ func TestHandlers(t *testing.T) {
 	var shortenURL string
 	var originalURL string
 
-	t.Run("save	", func(t *testing.T) {
+	t.Run("save", func(t *testing.T) {
 		originalURL = "http://jqymby.biz/wruxoh/eii7bbkvbz4oj"
 
 		request := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(originalURL))
@@ -67,5 +69,29 @@ func TestHandlers(t *testing.T) {
 		assert.Equalf(t, originalURL, result.Header.Get("Location"),
 			"Несоответствие URL полученного в заголовке Location ожидаемому",
 		)
+	})
+
+	t.Run("save	shorten", func(t *testing.T) {
+		reqBody, err := json.Marshal(map[string]string{
+			"url": "http://fsdkfkldshfjs.ru/test",
+		})
+		require.NoError(t, err)
+
+		request := httptest.NewRequest(http.MethodPost, "/api/shorten", bytes.NewBuffer(reqBody))
+		w := httptest.NewRecorder()
+		h := http.HandlerFunc(handler.CreateShorten)
+		h(w, request)
+		result := w.Result()
+
+		assert.Equal(t, http.StatusCreated, result.StatusCode)
+		assert.Equal(t, "application/json", result.Header.Get("Content-Type"))
+
+		m := RespReqCreateShorten{}
+		err = json.NewDecoder(result.Body).Decode(&m)
+		require.NoError(t, err)
+
+		// проверяем URL на валидность
+		_, urlParseErr := url.Parse(m.Result)
+		assert.NoErrorf(t, urlParseErr, "cannot parsee URL: %s ", m.Result, err)
 	})
 }

@@ -21,6 +21,7 @@ func main() {
 	r.MethodNotAllowed(serv.Handlers.ErrorHandler)
 	r.Get("/{id}", serv.Handlers.GetOriginalURL)
 	r.Post("/", serv.Handlers.CreateShortLink)
+	r.Post("/api/shorten", serv.Handlers.CreateShorten)
 
 	err := http.ListenAndServe("127.0.0.1:8080", r)
 	if err != nil {
