@@ -83,6 +83,9 @@ func TestHandlers(t *testing.T) {
 		h(w, request)
 		result := w.Result()
 
+		err = result.Body.Close()
+		require.NoError(t, err)
+
 		assert.Equal(t, http.StatusCreated, result.StatusCode)
 		assert.Equal(t, "application/json", result.Header.Get("Content-Type"))
 
