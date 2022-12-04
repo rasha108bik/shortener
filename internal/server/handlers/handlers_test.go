@@ -5,21 +5,32 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
 
+	"github.com/caarlos0/env/v6"
 	"github.com/go-chi/chi/v5"
-	"github.com/rasha108bik/tiny_url/internal/storage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/rasha108bik/tiny_url/internal/config"
+	"github.com/rasha108bik/tiny_url/internal/storage"
 )
 
 func TestHandlers(t *testing.T) {
 	db := storage.NewStorage()
-	handler := NewHandler(db)
+	var cfg config.Config
+	err := env.Parse(&cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("%+v\n", cfg)
+
+	handler := NewHandler(db, &cfg)
 
 	var shortenURL string
 	var originalURL string

@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/rasha108bik/tiny_url/internal/config"
 	"github.com/rasha108bik/tiny_url/internal/storage"
 )
 
@@ -19,11 +20,13 @@ type Handlers interface {
 
 type handler struct {
 	storage storage.Storage
+	cfg     *config.Config
 }
 
-func NewHandler(storage storage.Storage) *handler {
+func NewHandler(storage storage.Storage, cfg *config.Config) *handler {
 	return &handler{
 		storage: storage,
+		cfg:     cfg,
 	}
 }
 
@@ -47,7 +50,7 @@ func (h *handler) CreateShortLink(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	_, err = w.Write([]byte("http://127.0.0.1:8080/" + res))
+	_, err = w.Write([]byte(h.cfg.ServerAddress + "/" + res))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -84,7 +87,7 @@ func (h *handler) CreateShorten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respRCS := RespReqCreateShorten{Result: "http://127.0.0.1:8080/" + newURL}
+	respRCS := RespReqCreateShorten{Result: h.cfg.ServerAddress + newURL}
 	response, err := json.Marshal(respRCS)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

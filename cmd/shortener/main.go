@@ -22,7 +22,7 @@ func main() {
 	log.Printf("%+v\n", cfg)
 
 	db := storage.NewStorage()
-	h := handlers.NewHandler(db)
+	h := handlers.NewHandler(db, &cfg)
 	serv := server.NewServer(h)
 
 	r := chi.NewRouter()
