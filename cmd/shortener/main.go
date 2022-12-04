@@ -19,6 +19,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Printf("%+v\n", cfg)
 
 	db := storage.NewStorage()
 	h := handlers.NewHandler(db)
