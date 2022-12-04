@@ -50,7 +50,7 @@ func (h *handler) CreateShortLink(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	_, err = w.Write([]byte(h.cfg.ServerAddress + "/" + res))
+	_, err = w.Write([]byte(h.cfg.ServerAddress + res))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
