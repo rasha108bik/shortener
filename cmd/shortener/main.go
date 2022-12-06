@@ -33,7 +33,7 @@ func main() {
 		r.Post("/api/shorten", serv.Handlers.CreateShorten)
 	})
 
-	err = http.ListenAndServe(cfg.ServerAddress, r)
+	err = http.ListenAndServe("127.0.0.1:"+cfg.ServerAddress, r)
 	if err != nil {
 		log.Fatal(err)
 	}
