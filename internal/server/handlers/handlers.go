@@ -50,7 +50,7 @@ func (h *handler) CreateShortLink(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	_, err = w.Write([]byte("http://" + h.cfg.ServerAddress + "/" + res))
+	_, err = w.Write([]byte("http://127.0.0.1:" + h.cfg.ServerAddress + "/" + res))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -87,7 +87,7 @@ func (h *handler) CreateShorten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respRCS := RespReqCreateShorten{Result: "http://" + h.cfg.ServerAddress + "/" + newURL}
+	respRCS := RespReqCreateShorten{Result: "http://127.0.0.1:" + h.cfg.ServerAddress + "/" + newURL}
 	response, err := json.Marshal(respRCS)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
