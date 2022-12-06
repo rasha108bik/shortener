@@ -19,6 +19,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	if cfg.BaseURL == "" {
+		cfg.BaseURL = "/"
+	}
+	if cfg.ServerAddress == "" {
+		cfg.ServerAddress = "127.0.0.1:8080"
+	}
 	log.Printf("%+v\n", cfg)
 
 	db := storage.NewStorage()
@@ -33,7 +40,7 @@ func main() {
 		r.Post("/api/shorten", serv.Handlers.CreateShorten)
 	})
 
-	err = http.ListenAndServe("127.0.0.1:"+cfg.ServerAddress, r)
+	err = http.ListenAndServe(cfg.ServerAddress, r)
 	if err != nil {
 		log.Fatal(err)
 	}
