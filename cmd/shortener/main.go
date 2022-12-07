@@ -28,13 +28,11 @@ func main() {
 
 	r := chi.NewRouter()
 	r.MethodNotAllowed(serv.Handlers.ErrorHandler)
-	r.Route(cfg.BaseURL, func(r chi.Router) {
-		r.Get("/{id}", serv.Handlers.GetOriginalURL)
-		r.Post("/", serv.Handlers.CreateShortLink)
-		r.Post("/api/shorten", serv.Handlers.CreateShorten)
-	})
+	r.Get(cfg.BaseURL+"{id}", serv.Handlers.GetOriginalURL)
+	r.Post("/api/shorten", serv.Handlers.CreateShorten)
+	r.Post("/", serv.Handlers.CreateShortLink)
 
-	err = http.ListenAndServe("127.0.0.1:"+cfg.ServerAddress, r)
+	err = http.ListenAndServe(cfg.ServerAddress, r)
 	if err != nil {
 		log.Fatal(err)
 	}
