@@ -32,3 +32,5 @@ git fetch template && git checkout template/main .github
 Например в ветке с названием `iter4` запустятся автотесты для итераций с первой по четвертую.
 
 При мерже ветки с итерацией в основную ветку (`main`) будут запускаться все автотесты.
+
+# project architecture https://github.com/evrone/go-clean-template

@@ -7,7 +7,7 @@ import (
 	"github.com/caarlos0/env/v6"
 	"github.com/go-chi/chi/v5"
 
-	"github.com/rasha108bik/tiny_url/internal/config"
+	"github.com/rasha108bik/tiny_url/config"
 	"github.com/rasha108bik/tiny_url/internal/server"
 	"github.com/rasha108bik/tiny_url/internal/server/handlers"
 	"github.com/rasha108bik/tiny_url/internal/storage"
