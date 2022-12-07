@@ -82,7 +82,7 @@ func TestHandlers(t *testing.T) {
 		)
 	})
 
-	t.Run("save	shorten", func(t *testing.T) {
+	t.Run("save shorten", func(t *testing.T) {
 		reqBody, err := json.Marshal(map[string]string{
 			"url": "http://fsdkfkldshfjs.ru/test",
 		})
