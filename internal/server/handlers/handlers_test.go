@@ -109,3 +109,6 @@ func TestHandlers(t *testing.T) {
 		assert.NoErrorf(t, urlParseErr, "cannot parsee URL: %s ", m.Result, err)
 	})
 }
+
+func TestHandlersResty(t *testing.T) {
+}
