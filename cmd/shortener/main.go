@@ -20,12 +20,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if cfg.BaseURL == "" {
-		cfg.BaseURL = "/"
-	}
-	if cfg.ServerAddress == "" {
-		cfg.ServerAddress = "8080"
-	}
 	log.Printf("%+v\n", cfg)
 
 	db := storage.NewStorage()
