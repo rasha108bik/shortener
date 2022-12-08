@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/caarlos0/env/v6"
 	"github.com/go-chi/chi/v5"
@@ -15,6 +16,16 @@ import (
 
 func main() {
 	var cfg config.Config
+	cfg.ServerAddress = os.Getenv("SERVER_ADDRESS")
+	if cfg.ServerAddress == "" {
+		cfg.ServerAddress = "127.0.0.1:8080"
+	}
+
+	cfg.BaseURL = os.Getenv("BASE_URL")
+	if cfg.BaseURL == "" {
+		cfg.BaseURL = "/"
+	}
+
 	err := env.Parse(&cfg)
 	if err != nil {
 		log.Fatal(err)
