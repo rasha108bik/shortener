@@ -11,6 +11,7 @@ import (
 	"github.com/rasha108bik/tiny_url/internal/server"
 	"github.com/rasha108bik/tiny_url/internal/server/handlers"
 	"github.com/rasha108bik/tiny_url/internal/storage"
+	"github.com/rasha108bik/tiny_url/pkg/storagefile"
 )
 
 func main() {
@@ -22,8 +23,20 @@ func main() {
 
 	log.Printf("%+v\n", cfg)
 
+	fileName := cfg.FileStoragePath
+	producer, err := storagefile.NewProducer(fileName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer producer.Close()
+	consumer, err := storagefile.NewConsumer(fileName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer consumer.Close()
+
 	db := storage.NewStorage()
-	h := handlers.NewHandler(db, &cfg)
+	h := handlers.NewHandler(db, &cfg, producer, consumer)
 	serv := server.NewServer(h)
 
 	r := chi.NewRouter()

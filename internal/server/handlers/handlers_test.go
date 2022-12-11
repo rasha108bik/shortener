@@ -19,6 +19,7 @@ import (
 
 	"github.com/rasha108bik/tiny_url/config"
 	"github.com/rasha108bik/tiny_url/internal/storage"
+	"github.com/rasha108bik/tiny_url/pkg/storagefile"
 )
 
 func TestHandlers(t *testing.T) {
@@ -30,7 +31,19 @@ func TestHandlers(t *testing.T) {
 	}
 	log.Printf("%+v\n", cfg)
 
-	handler := NewHandler(db, &cfg)
+	fileName := cfg.FileStoragePath
+	producer, err := storagefile.NewProducer(fileName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer producer.Close()
+	consumer, err := storagefile.NewConsumer(fileName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer consumer.Close()
+
+	handler := NewHandler(db, &cfg, producer, consumer)
 
 	var shortenURL string
 	var originalURL string

@@ -9,6 +9,7 @@ import (
 
 	"github.com/rasha108bik/tiny_url/config"
 	"github.com/rasha108bik/tiny_url/internal/storage"
+	"github.com/rasha108bik/tiny_url/pkg/storagefile"
 )
 
 type Handlers interface {
@@ -19,14 +20,23 @@ type Handlers interface {
 }
 
 type handler struct {
-	storage storage.Storage
-	cfg     *config.Config
+	storage  storage.Storage
+	cfg      *config.Config
+	producer storagefile.Producer
+	consumer storagefile.Consumer
 }
 
-func NewHandler(storage storage.Storage, cfg *config.Config) *handler {
+func NewHandler(
+	storage storage.Storage,
+	cfg *config.Config,
+	producer storagefile.Producer,
+	consumer storagefile.Consumer,
+) *handler {
 	return &handler{
-		storage: storage,
-		cfg:     cfg,
+		storage:  storage,
+		cfg:      cfg,
+		producer: producer,
+		consumer: consumer,
 	}
 }
 
@@ -48,6 +58,12 @@ func (h *handler) CreateShortLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = h.producer.WriteEvent(&storagefile.Event{URL: res})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	_, err = w.Write([]byte(h.cfg.BaseURL + "/" + res))
@@ -66,6 +82,21 @@ func (h *handler) GetOriginalURL(w http.ResponseWriter, r *http.Request) {
 
 	url, err := h.storage.GetURLShortID(id)
 	if err != nil {
+		readEvent, err := h.consumer.ReadEvent()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		for _, event := range readEvent {
+			if event.URL == id {
+				url = event.URL
+				break
+			}
+		}
+	}
+
+	if url == "" {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -84,6 +115,12 @@ func (h *handler) CreateShorten(w http.ResponseWriter, r *http.Request) {
 	newURL, err := h.storage.StoreURL(m.URL)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = h.producer.WriteEvent(&storagefile.Event{URL: newURL})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
