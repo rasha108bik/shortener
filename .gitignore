@@ -13,3 +13,6 @@ vendor/
 # vim swp
 *.swp
 *.swo
+
+# files for save urls
+URLs.log

@@ -22,15 +22,15 @@ type Handlers interface {
 type handler struct {
 	storage  storage.Storage
 	cfg      *config.Config
-	producer storagefile.Producer
-	consumer storagefile.Consumer
+	producer storagefile.Writer
+	consumer storagefile.Reader
 }
 
 func NewHandler(
 	storage storage.Storage,
 	cfg *config.Config,
-	producer storagefile.Producer,
-	consumer storagefile.Consumer,
+	producer storagefile.Writer,
+	consumer storagefile.Reader,
 ) *handler {
 	return &handler{
 		storage:  storage,
