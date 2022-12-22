@@ -33,3 +33,7 @@ func (f *storage) GetURLShortID(id string) (string, error) {
 	}
 	return "", errors.New("no such id")
 }
+
+func (f *storage) GetURLsShort() map[string]string {
+	return f.Locations
+}

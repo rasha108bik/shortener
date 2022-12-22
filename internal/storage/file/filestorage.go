@@ -47,6 +47,10 @@ func (f *fileStorage) GetURLShortID(id string) (string, error) {
 	return "", errors.New("no such id")
 }
 
+func (f *fileStorage) GetURLsShort() map[string]string {
+	return nil
+}
+
 func (f *fileStorage) Close() error {
 	return f.file.Close()
 }

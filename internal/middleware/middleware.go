@@ -3,8 +3,11 @@ package middleware
 import (
 	"compress/gzip"
 	"io"
+	"log"
 	"net/http"
+	"strconv"
 	"strings"
+	"time"
 )
 
 func GzipRequest(next http.Handler) http.Handler {
@@ -53,5 +56,32 @@ func GzipHandle(next http.Handler) http.Handler {
 		w.Header().Set("Content-Encoding", "gzip")
 		// передаём обработчику страницы переменную типа gzipWriter для вывода данных
 		next.ServeHTTP(gzipWriter{ResponseWriter: w, Writer: gz}, r)
+	})
+}
+
+const authorization = "Authorization"
+
+func SetUserCookie(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if (r.RequestURI == "/") || (r.Method == http.MethodPost) {
+			log.Printf("set cookie")
+			cookie := http.Cookie{
+				Name:  authorization,
+				Value: strconv.Itoa(int(time.Now().Unix())),
+			}
+			http.SetCookie(w, &cookie)
+		}
+
+		if r.RequestURI == "/api/user/urls" && r.Method == http.MethodGet {
+			log.Printf("check cookie")
+			auth, err := r.Cookie(authorization)
+			log.Printf("%v", auth)
+			if auth == nil {
+				log.Printf("cookie == nil")
+				http.Error(w, err.Error(), http.StatusNoContent)
+			}
+		}
+
+		next.ServeHTTP(w, r)
 	})
 }

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 
@@ -15,6 +16,7 @@ type Handlers interface {
 	CreateShorten(w http.ResponseWriter, r *http.Request)
 	CreateShortLink(w http.ResponseWriter, r *http.Request)
 	GetOriginalURL(w http.ResponseWriter, r *http.Request)
+	GetOriginalURLs(w http.ResponseWriter, r *http.Request)
 	ErrorHandler(w http.ResponseWriter, r *http.Request)
 }
 
@@ -119,4 +121,38 @@ func (h *handler) CreateShorten(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+}
+
+func (h *handler) GetOriginalURLs(w http.ResponseWriter, r *http.Request) {
+	mapURLs := h.db.GetURLsShort()
+	if len(mapURLs) == 0 {
+		http.Error(w, errors.New("urls is empty").Error(), http.StatusNoContent)
+		return
+	}
+
+	mapData := mapperGetOriginalURLs(mapURLs, h.cfg.BaseURL)
+	res, err := json.Marshal(mapData)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, err = w.Write(res)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func mapperGetOriginalURLs(data map[string]string, baseURL string) []RespGetOriginalURLs {
+	res := make([]RespGetOriginalURLs, 0)
+	for k, v := range data {
+		res = append(res, RespGetOriginalURLs{
+			ShortURL:    baseURL + "/" + k,
+			OriginalURL: v,
+		})
+	}
+	return res
 }
