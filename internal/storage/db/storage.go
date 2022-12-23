@@ -6,11 +6,6 @@ import (
 	"net/url"
 )
 
-type Storage interface {
-	StoreURL(longURL string) (string, error)
-	GetURLShortID(id string) (string, error)
-}
-
 type storage struct {
 	Locations map[string]string
 }
@@ -21,19 +16,19 @@ func NewStorage() *storage {
 	}
 }
 
-func (s *storage) StoreURL(longURL string) (string, error) {
+func (f *storage) StoreURL(longURL string) (string, error) {
 	if _, err := url.ParseRequestURI(longURL); err != nil {
 		return "", err
 	}
 
-	lastID := len(s.Locations)
+	lastID := len(f.Locations)
 	newID := fmt.Sprint(lastID + 1)
-	s.Locations[newID] = longURL
+	f.Locations[newID] = longURL
 	return newID, nil
 }
 
-func (s *storage) GetURLShortID(id string) (string, error) {
-	if url, ok := s.Locations[id]; ok {
+func (f *storage) GetURLShortID(id string) (string, error) {
+	if url, ok := f.Locations[id]; ok {
 		return url, nil
 	}
 	return "", errors.New("no such id")

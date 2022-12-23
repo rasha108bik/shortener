@@ -9,7 +9,6 @@ import (
 
 	"github.com/rasha108bik/tiny_url/config"
 	"github.com/rasha108bik/tiny_url/internal/storage"
-	"github.com/rasha108bik/tiny_url/pkg/storagefile"
 )
 
 type Handlers interface {
@@ -20,23 +19,20 @@ type Handlers interface {
 }
 
 type handler struct {
-	storage  storage.Storage
-	cfg      *config.Config
-	producer storagefile.Writer
-	consumer storagefile.Reader
+	cfg         *config.Config
+	db          storage.Storager
+	fileStorage storage.Storager
 }
 
 func NewHandler(
-	storage storage.Storage,
 	cfg *config.Config,
-	producer storagefile.Writer,
-	consumer storagefile.Reader,
+	db storage.Storager,
+	fileStorage storage.Storager,
 ) *handler {
 	return &handler{
-		storage:  storage,
-		cfg:      cfg,
-		producer: producer,
-		consumer: consumer,
+		cfg:         cfg,
+		db:          db,
+		fileStorage: fileStorage,
 	}
 }
 
@@ -52,13 +48,13 @@ func (h *handler) CreateShortLink(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	res, err := h.storage.StoreURL(string(resBody))
+	res, err := h.db.StoreURL(string(resBody))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err = h.producer.WriteEvent(&storagefile.Event{URL: res})
+	_, err = h.fileStorage.StoreURL(res)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -80,23 +76,8 @@ func (h *handler) GetOriginalURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url, err := h.storage.GetURLShortID(id)
+	url, err := h.db.GetURLShortID(id)
 	if err != nil {
-		readEvent, err := h.consumer.ReadEvent()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		for _, event := range readEvent {
-			if event.URL == id {
-				url = event.URL
-				break
-			}
-		}
-	}
-
-	if url == "" {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -112,13 +93,13 @@ func (h *handler) CreateShorten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newURL, err := h.storage.StoreURL(m.URL)
+	newURL, err := h.db.StoreURL(m.URL)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err = h.producer.WriteEvent(&storagefile.Event{URL: newURL})
+	_, err = h.fileStorage.StoreURL(newURL)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
