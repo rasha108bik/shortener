@@ -90,6 +90,34 @@ func TestHandlers(t *testing.T) {
 		)
 	})
 
+	t.Run("fetch_urls", func(t *testing.T) {
+		request := httptest.NewRequest(http.MethodGet, "/api/user/urls", nil)
+		w := httptest.NewRecorder()
+		h := http.HandlerFunc(handler.GetOriginalURLs)
+
+		h(w, request)
+		result := w.Result()
+		err = result.Body.Close()
+		require.NoError(t, err)
+
+		assert.Equal(t, http.StatusOK, result.StatusCode)
+
+		m := []RespGetOriginalURLs{}
+		err = json.NewDecoder(result.Body).Decode(&m)
+		require.NoError(t, err)
+
+		expectedBody := []RespGetOriginalURLs{
+			{
+				ShortURL:    shortenURL,
+				OriginalURL: originalURL,
+			},
+		}
+
+		assert.Equalf(t, expectedBody, m,
+			"Данные в теле ответа не соответствуют ожидаемым",
+		)
+	})
+
 	t.Run("save shorten", func(t *testing.T) {
 		reqBody, err := json.Marshal(map[string]string{
 			"url": "http://fsdkfkldshfjs.ru/test",
@@ -115,37 +143,5 @@ func TestHandlers(t *testing.T) {
 		// проверяем URL на валидность
 		_, urlParseErr := url.Parse(m.Result)
 		assert.NoErrorf(t, urlParseErr, "cannot parsee URL: %s ", m.Result, err)
-	})
-
-	t.Run("fetch_urls", func(t *testing.T) {
-		request := httptest.NewRequest(http.MethodGet, "/api/user/urls", nil)
-		w := httptest.NewRecorder()
-		h := http.HandlerFunc(handler.GetOriginalURLs)
-
-		h(w, request)
-		result := w.Result()
-		err = result.Body.Close()
-		require.NoError(t, err)
-
-		assert.Equal(t, http.StatusOK, result.StatusCode)
-
-		m := []RespGetOriginalURLs{}
-		err = json.NewDecoder(result.Body).Decode(&m)
-		require.NoError(t, err)
-
-		expectedBody := []RespGetOriginalURLs{
-			{
-				ShortURL:    "http://localhost:8080/1",
-				OriginalURL: "http://jqymby.biz/wruxoh/eii7bbkvbz4oj",
-			},
-			{
-				ShortURL:    "http://localhost:8080/2",
-				OriginalURL: "http://fsdkfkldshfjs.ru/test",
-			},
-		}
-
-		assert.Equalf(t, expectedBody, m,
-			"Данные в теле ответа не соответствуют ожидаемым",
-		)
 	})
 }
