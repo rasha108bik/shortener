@@ -11,6 +11,7 @@ func NewRouter(s *server.Server) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.GzipHandle)
 	r.Use(middleware.GzipRequest)
+	r.Use(middleware.SetUserCookie)
 	r.MethodNotAllowed(s.Handlers.ErrorHandler)
 	r.Get("/{id}", s.Handlers.GetOriginalURL)
 	r.Get("/api/user/urls", s.Handlers.GetOriginalURLs)
