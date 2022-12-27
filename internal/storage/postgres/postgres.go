@@ -11,7 +11,7 @@ import (
 
 const (
 	defaultMaxPoolSize  = 1
-	defaultConnAttempts = 10
+	defaultConnAttempts = 2
 	defaultConnTimeout  = time.Second
 )
 
