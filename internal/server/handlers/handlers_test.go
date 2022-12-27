@@ -38,7 +38,7 @@ func TestHandlers(t *testing.T) {
 	}
 	defer strgFile.Close()
 
-	handler := NewHandler(&cfg, db, strgFile)
+	handler := NewHandler(&cfg, db, strgFile, nil)
 
 	var shortenURL string
 	var originalURL string

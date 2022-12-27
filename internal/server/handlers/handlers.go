@@ -1,15 +1,18 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 
 	"github.com/rasha108bik/tiny_url/config"
 	"github.com/rasha108bik/tiny_url/internal/storage"
+	"github.com/rasha108bik/tiny_url/internal/storage/postgres"
 )
 
 type Handlers interface {
@@ -18,23 +21,27 @@ type Handlers interface {
 	GetOriginalURL(w http.ResponseWriter, r *http.Request)
 	GetOriginalURLs(w http.ResponseWriter, r *http.Request)
 	ErrorHandler(w http.ResponseWriter, r *http.Request)
+	Ping(w http.ResponseWriter, r *http.Request)
 }
 
 type handler struct {
 	cfg         *config.Config
 	db          storage.Storager
 	fileStorage storage.Storager
+	pg          *postgres.Postgres
 }
 
 func NewHandler(
 	cfg *config.Config,
 	db storage.Storager,
 	fileStorage storage.Storager,
+	pg *postgres.Postgres,
 ) *handler {
 	return &handler{
 		cfg:         cfg,
 		db:          db,
 		fileStorage: fileStorage,
+		pg:          pg,
 	}
 }
 
@@ -155,4 +162,17 @@ func mapperGetOriginalURLs(data map[string]string, baseURL string) []RespGetOrig
 		})
 	}
 	return res
+}
+
+func (h *handler) Ping(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+
+	err := h.pg.Pool.Ping(ctx)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
