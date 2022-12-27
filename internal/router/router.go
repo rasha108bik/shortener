@@ -13,6 +13,7 @@ func NewRouter(s *server.Server) *chi.Mux {
 	r.Use(middleware.GzipRequest)
 	r.Use(middleware.SetUserCookie)
 	r.MethodNotAllowed(s.Handlers.ErrorHandler)
+	r.Get("/ping", s.Handlers.Ping)
 	r.Get("/{id}", s.Handlers.GetOriginalURL)
 	r.Get("/api/user/urls", s.Handlers.GetOriginalURLs)
 	r.Post("/api/shorten", s.Handlers.CreateShorten)
