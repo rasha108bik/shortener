@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -22,7 +21,7 @@ func main() {
 
 	pg, err := postgres.New(context.Background(), cfg.DatabaseDSN, postgres.MaxPoolSize(4))
 	if err != nil {
-		log.Fatal(fmt.Errorf("postgres.New: %w", err))
+		log.Printf("postgres.New: %v\n", err)
 	}
 	defer pg.Close()
 
