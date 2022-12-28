@@ -25,8 +25,7 @@ func main() {
 	}
 	defer pg.Close()
 
-	fileName := cfg.FileStoragePath
-	filestorage, err := filestorage.NewFileStorage(fileName)
+	filestorage, err := filestorage.NewFileStorage(cfg.FileStoragePath)
 	if err != nil {
 		log.Fatal(err)
 	}
