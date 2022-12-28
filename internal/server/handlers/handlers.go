@@ -168,7 +168,7 @@ func (h *handler) Ping(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
-	err := h.pg.Pool.Ping(ctx)
+	err := h.pg.Postgres.PingContext(ctx)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
