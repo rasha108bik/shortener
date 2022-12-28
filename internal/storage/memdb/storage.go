@@ -6,17 +6,17 @@ import (
 	"net/url"
 )
 
-type storage struct {
+type memDB struct {
 	Locations map[string]string
 }
 
-func NewStorage() *storage {
-	return &storage{
+func NewMemDb() *memDB {
+	return &memDB{
 		Locations: make(map[string]string),
 	}
 }
 
-func (f *storage) StoreURL(longURL string) (string, error) {
+func (f *memDB) StoreURL(longURL string) (string, error) {
 	if _, err := url.ParseRequestURI(longURL); err != nil {
 		return "", err
 	}
@@ -27,13 +27,13 @@ func (f *storage) StoreURL(longURL string) (string, error) {
 	return newID, nil
 }
 
-func (f *storage) GetURLShortID(id string) (string, error) {
+func (f *memDB) GetURLShortID(id string) (string, error) {
 	if url, ok := f.Locations[id]; ok {
 		return url, nil
 	}
 	return "", errors.New("no such id")
 }
 
-func (f *storage) GetURLsShort() map[string]string {
+func (f *memDB) GetURLsShort() map[string]string {
 	return f.Locations
 }
