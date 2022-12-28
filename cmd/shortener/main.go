@@ -1,17 +1,20 @@
 package main
 
 import (
-	"context"
+	"fmt"
 	"log"
 	"net/http"
 
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/rasha108bik/tiny_url/config"
 	"github.com/rasha108bik/tiny_url/internal/router"
 	"github.com/rasha108bik/tiny_url/internal/server"
 	"github.com/rasha108bik/tiny_url/internal/server/handlers"
-	storage "github.com/rasha108bik/tiny_url/internal/storage/db"
 	filestorage "github.com/rasha108bik/tiny_url/internal/storage/file"
-	"github.com/rasha108bik/tiny_url/internal/storage/postgres"
+	storage "github.com/rasha108bik/tiny_url/internal/storage/memdb"
+	pgDB "github.com/rasha108bik/tiny_url/internal/storage/postgres"
 )
 
 func main() {
@@ -19,11 +22,20 @@ func main() {
 
 	log.Printf("%+v\n", cfg)
 
-	pg, err := postgres.New(context.Background(), cfg.DatabaseDSN, postgres.MaxPoolSize(4))
+	pg, err := pgDB.New(cfg.DatabaseDSN)
 	if err != nil {
 		log.Printf("postgres.New: %v\n", err)
 	}
 	defer pg.Close()
+
+	driver, err := postgres.WithInstance(pg.Postgres, &postgres.Config{})
+	m, err := migrate.NewWithDatabaseInstance(
+		"/migrations",
+		"postgres", driver)
+	err = m.Up() // or m.Step(2) if you want to explicitly set the number of migrations to run
+	if err != nil && err != migrate.ErrNoChange {
+		log.Fatal(fmt.Errorf("migrate failed: %v", err))
+	}
 
 	filestorage, err := filestorage.NewFileStorage(cfg.FileStoragePath)
 	if err != nil {
@@ -31,8 +43,8 @@ func main() {
 	}
 	defer filestorage.Close()
 
-	db := storage.NewStorage()
-	h := handlers.NewHandler(cfg, db, filestorage, pg)
+	memDB := storage.NewMemDb()
+	h := handlers.NewHandler(cfg, memDB, filestorage, pg)
 	serv := server.NewServer(h)
 	r := router.NewRouter(serv)
 

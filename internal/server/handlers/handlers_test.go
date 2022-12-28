@@ -18,12 +18,12 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/rasha108bik/tiny_url/config"
-	storage "github.com/rasha108bik/tiny_url/internal/storage/db"
 	storagefile "github.com/rasha108bik/tiny_url/internal/storage/file"
+	storage "github.com/rasha108bik/tiny_url/internal/storage/memdb"
 )
 
 func TestHandlers(t *testing.T) {
-	db := storage.NewStorage()
+	memDB := storage.NewMemDb()
 	var cfg config.Config
 	err := env.Parse(&cfg)
 	if err != nil {
@@ -38,7 +38,7 @@ func TestHandlers(t *testing.T) {
 	}
 	defer strgFile.Close()
 
-	handler := NewHandler(&cfg, db, strgFile, nil)
+	handler := NewHandler(&cfg, memDB, strgFile, nil)
 
 	var shortenURL string
 	var originalURL string

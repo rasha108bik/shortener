@@ -26,20 +26,20 @@ type Handlers interface {
 
 type handler struct {
 	cfg         *config.Config
-	db          storage.Storager
+	memDB       storage.Storager
 	fileStorage storage.Storager
 	pg          *postgres.Postgres
 }
 
 func NewHandler(
 	cfg *config.Config,
-	db storage.Storager,
+	memDB storage.Storager,
 	fileStorage storage.Storager,
 	pg *postgres.Postgres,
 ) *handler {
 	return &handler{
 		cfg:         cfg,
-		db:          db,
+		memDB:       memDB,
 		fileStorage: fileStorage,
 		pg:          pg,
 	}
@@ -57,7 +57,7 @@ func (h *handler) CreateShortLink(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	res, err := h.db.StoreURL(string(resBody))
+	res, err := h.memDB.StoreURL(string(resBody))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -85,7 +85,7 @@ func (h *handler) GetOriginalURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url, err := h.db.GetURLShortID(id)
+	url, err := h.memDB.GetURLShortID(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -102,7 +102,7 @@ func (h *handler) CreateShorten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newURL, err := h.db.StoreURL(m.URL)
+	newURL, err := h.memDB.StoreURL(m.URL)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -131,7 +131,7 @@ func (h *handler) CreateShorten(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) GetOriginalURLs(w http.ResponseWriter, r *http.Request) {
-	mapURLs := h.db.GetURLsShort()
+	mapURLs := h.memDB.GetURLsShort()
 	if len(mapURLs) == 0 {
 		http.Error(w, errors.New("urls is empty").Error(), http.StatusNoContent)
 		return

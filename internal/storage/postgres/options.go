@@ -1,23 +1,23 @@
 package postgres
 
-import "time"
+// import "time"
 
-type Options func(*Postgres)
+// type Options func(*Postgres)
 
-func MaxPoolSize(size int) Options {
-	return func(c *Postgres) {
-		c.maxPoolSize = size
-	}
-}
+// func MaxPoolSize(size int) Options {
+// 	return func(c *Postgres) {
+// 		c.maxPoolSize = size
+// 	}
+// }
 
-func ConnAttempts(attempts int) Options {
-	return func(c *Postgres) {
-		c.connAttempts = attempts
-	}
-}
+// func ConnAttempts(attempts int) Options {
+// 	return func(c *Postgres) {
+// 		c.connAttempts = attempts
+// 	}
+// }
 
-func ConnTimeout(timeout time.Duration) Options {
-	return func(c *Postgres) {
-		c.connTimeout = timeout
-	}
-}
+// func ConnTimeout(timeout time.Duration) Options {
+// 	return func(c *Postgres) {
+// 		c.connTimeout = timeout
+// 	}
+// }
