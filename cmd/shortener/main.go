@@ -1,13 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
+	//	"github.com/golang-migrate/migrate/v4"
+	//	"github.com/golang-migrate/migrate/v4/database/postgres"
+	//	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/rasha108bik/tiny_url/config"
 	"github.com/rasha108bik/tiny_url/internal/router"
 	"github.com/rasha108bik/tiny_url/internal/server"
@@ -24,28 +23,28 @@ func main() {
 
 	pg, err := pgDB.New(cfg.DatabaseDSN)
 	if err != nil {
-		log.Printf("postgres.New: %v\n", err)
+		log.Printf("pgDB.New: %v\n", err)
 	}
 	defer pg.Close()
 
-	if cfg.DatabaseDSN != "" {
-		driver, err := postgres.WithInstance(pg.Postgres, &postgres.Config{})
-		if err != nil {
-			log.Printf("postgres.WithInstance: %v\n", err)
-		}
-
-		m, err := migrate.NewWithDatabaseInstance(
-			"./migrations/",
-			"postgres", driver)
-		if err != nil {
-			log.Printf("migrate.NewWithDatabaseInstance: %v\n", err)
-		}
-
-		err = m.Up() // or m.Step(2) if you want to explicitly set the number of migrations to run
-		if err != nil && err != migrate.ErrNoChange {
-			log.Fatal(fmt.Errorf("migrate failed: %v", err))
-		}
-	}
+	//	if cfg.DatabaseDSN != "" {
+	//		driver, err := postgres.WithInstance(pg.Postgres, &postgres.Config{})
+	//		if err != nil {
+	//			log.Printf("postgres.WithInstance: %v\n", err)
+	//		}
+	//
+	//		m, err := migrate.NewWithDatabaseInstance(
+	//			"./migrations/",
+	//			"postgres", driver)
+	//		if err != nil {
+	//			log.Printf("migrate.NewWithDatabaseInstance: %v\n", err)
+	//		}
+	//
+	//		err = m.Up() // or m.Step(2) if you want to explicitly set the number of migrations to run
+	//		if err != nil && err != migrate.ErrNoChange {
+	//			log.Fatal(fmt.Errorf("migrate failed: %v", err))
+	//		}
+	//	}
 
 	filestorage, err := filestorage.NewFileStorage(cfg.FileStoragePath)
 	if err != nil {

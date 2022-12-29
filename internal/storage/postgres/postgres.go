@@ -68,7 +68,7 @@ type Postgres struct {
 }
 
 func New(dns string) (*Postgres, error) {
-	db, err := sql.Open("postgres", dns)
+	db, err := sql.Open("pgx", dns)
 	if err != nil {
 		return nil, err
 	}
