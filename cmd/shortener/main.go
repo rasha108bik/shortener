@@ -51,7 +51,7 @@ func main() {
 	}
 	defer filestorage.Close()
 
-	memDB := storage.NewMemDb()
+	memDB := storage.NewMemDB()
 	h := handlers.NewHandler(cfg, memDB, filestorage, pg)
 	serv := server.NewServer(h)
 	r := router.NewRouter(serv)
