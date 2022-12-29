@@ -23,7 +23,7 @@ import (
 )
 
 func TestHandlers(t *testing.T) {
-	memDB := storage.NewMemDb()
+	memDB := storage.NewMemDB()
 	var cfg config.Config
 	err := env.Parse(&cfg)
 	if err != nil {
