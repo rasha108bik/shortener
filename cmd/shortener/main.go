@@ -29,9 +29,17 @@ func main() {
 	defer pg.Close()
 
 	driver, err := postgres.WithInstance(pg.Postgres, &postgres.Config{})
+	if err != nil {
+		log.Printf("postgres.WithInstance: %v\n", err)
+	}
+
 	m, err := migrate.NewWithDatabaseInstance(
 		"/migrations",
 		"postgres", driver)
+	if err != nil {
+		log.Printf("migrate.NewWithDatabaseInstance: %v\n", err)
+	}
+
 	err = m.Up() // or m.Step(2) if you want to explicitly set the number of migrations to run
 	if err != nil && err != migrate.ErrNoChange {
 		log.Fatal(fmt.Errorf("migrate failed: %v", err))
