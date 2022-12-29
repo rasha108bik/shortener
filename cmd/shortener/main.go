@@ -35,7 +35,7 @@ func main() {
 		}
 
 		m, err := migrate.NewWithDatabaseInstance(
-			"/migrations",
+			"./migrations",
 			"postgres", driver)
 		if err != nil {
 			log.Printf("migrate.NewWithDatabaseInstance: %v\n", err)
