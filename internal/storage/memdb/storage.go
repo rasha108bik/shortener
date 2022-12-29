@@ -10,7 +10,7 @@ type memDB struct {
 	Locations map[string]string
 }
 
-func NewMemDb() *memDB {
+func NewMemDB() *memDB {
 	return &memDB{
 		Locations: make(map[string]string),
 	}
