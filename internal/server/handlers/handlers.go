@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log"
 	"net/http"
 	"time"
 
@@ -28,14 +29,14 @@ type handler struct {
 	cfg         *config.Config
 	memDB       storage.Storager
 	fileStorage storage.Storager
-	pg          *postgres.Postgres
+	pg          postgres.Postgres
 }
 
 func NewHandler(
 	cfg *config.Config,
 	memDB storage.Storager,
 	fileStorage storage.Storager,
-	pg *postgres.Postgres,
+	pg postgres.Postgres,
 ) *handler {
 	return &handler{
 		cfg:         cfg,
@@ -57,13 +58,25 @@ func (h *handler) CreateShortLink(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	res, err := h.memDB.StoreURL(string(resBody))
+	originalURL := string(resBody)
+	shortURL, err := storage.GenerateUniqKey()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	_, err = h.fileStorage.StoreURL(res)
+	err = h.pg.StoreURL(originalURL, shortURL)
+	if err != nil {
+		log.Printf("pg.StoreURL: %v\n", err)
+
+		err = h.memDB.StoreURL(originalURL, shortURL)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+	}
+
+	err = h.fileStorage.StoreURL(originalURL, shortURL)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -71,7 +84,7 @@ func (h *handler) CreateShortLink(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	_, err = w.Write([]byte(h.cfg.BaseURL + "/" + res))
+	_, err = w.Write([]byte(h.cfg.BaseURL + "/" + shortURL))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -102,19 +115,25 @@ func (h *handler) CreateShorten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newURL, err := h.memDB.StoreURL(m.URL)
+	shortURL, err := storage.GenerateUniqKey()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	_, err = h.fileStorage.StoreURL(newURL)
+	err = h.memDB.StoreURL(m.URL, shortURL)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = h.fileStorage.StoreURL(m.URL, shortURL)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	respRCS := RespReqCreateShorten{Result: h.cfg.BaseURL + "/" + newURL}
+	respRCS := RespReqCreateShorten{Result: h.cfg.BaseURL + "/" + shortURL}
 	response, err := json.Marshal(respRCS)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -168,7 +187,7 @@ func (h *handler) Ping(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
-	err := h.pg.Postgres.PingContext(ctx)
+	err := h.pg.Ping(ctx)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

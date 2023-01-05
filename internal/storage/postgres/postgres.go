@@ -1,9 +1,10 @@
 package postgres
 
 import (
-	"database/sql"
+	"context"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/jmoiron/sqlx"
 )
 
 // const (
@@ -63,21 +64,80 @@ import (
 // 	}
 // }
 
-type Postgres struct {
-	Postgres *sql.DB
+//go:generate mockgen -source=Postgres -package=$GOPACKAGE -destination=postgres_interface_mock.go
+
+type Postgres interface {
+	StoreURL(originalURL string, shortURL string) error
+	GetOriginalURLByShortURL(shortURL string) (string, error)
+	GetAllURLs() (map[string]string, error)
+	Ping(ctx context.Context) error
 }
 
-func New(dns string) (*Postgres, error) {
-	db, err := sql.Open("pgx", dns)
+type postgres struct {
+	Postgres *sqlx.DB
+}
+
+func New(dns string) (*postgres, error) {
+	db, err := sqlx.Connect("pgx", dns)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Postgres{
+	return &postgres{
 		Postgres: db,
 	}, nil
 }
 
-func (p *Postgres) Close() {
+func (p *postgres) Close() {
 	p.Postgres.Close()
+}
+
+type ShortLink struct {
+	ID          int    `db:"id"`
+	ShortURL    string `db:"short_url"`
+	OriginalURL string `db:"original_url"`
+}
+
+func (p *postgres) StoreURL(originalURL string, shortURL string) error {
+	_, err := p.Postgres.NamedExec(`INSERT INTO short_links (short_url, original_url)
+	VALUES (:short_url, :original_url)`, &ShortLink{ShortURL: shortURL, OriginalURL: originalURL})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *postgres) GetOriginalURLByShortURL(shortURL string) (string, error) {
+	var shortLink ShortLink
+	err := p.Postgres.Get(&shortLink, "SELECT * FROM short_links WHERE short_url=$1", shortURL)
+	if err != nil {
+		return "", err
+	}
+
+	return shortLink.OriginalURL, nil
+}
+
+func (p *postgres) GetAllURLs() (map[string]string, error) {
+	var shortLink []ShortLink
+	err := p.Postgres.Select(&shortLink, "SELECT * FROM short_links")
+	if err != nil {
+		return nil, err
+	}
+
+	res := make(map[string]string, len(shortLink))
+	for _, v := range shortLink {
+		res[v.ShortURL] = v.OriginalURL
+	}
+
+	return res, nil
+}
+
+func (p *postgres) Ping(ctx context.Context) error {
+	err := p.Postgres.PingContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

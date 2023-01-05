@@ -2,7 +2,6 @@ package storage
 
 import (
 	"errors"
-	"fmt"
 	"net/url"
 )
 
@@ -16,15 +15,15 @@ func NewMemDB() *memDB {
 	}
 }
 
-func (f *memDB) StoreURL(longURL string) (string, error) {
+func (f *memDB) StoreURL(longURL string, shortURL string) error {
 	if _, err := url.ParseRequestURI(longURL); err != nil {
-		return "", err
+		return err
 	}
 
-	lastID := len(f.Locations)
-	newID := fmt.Sprint(lastID + 1)
-	f.Locations[newID] = longURL
-	return newID, nil
+	// lastID := len(f.Locations)
+	// newID := fmt.Sprint(lastID + 1)
+	f.Locations[shortURL] = longURL
+	return nil
 }
 
 func (f *memDB) GetURLShortID(id string) (string, error) {

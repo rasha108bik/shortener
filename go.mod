@@ -4,9 +4,12 @@ go 1.19
 
 require (
 	github.com/caarlos0/env/v6 v6.10.1
+	github.com/catinello/base62 v0.0.0-20210103152244-29b605f01e9b
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/golang-migrate/migrate/v4 v4.15.2
+	github.com/golang/mock v1.6.0
 	github.com/jackc/pgx/v5 v5.2.0
+	github.com/jmoiron/sqlx v1.3.1
 	github.com/stretchr/testify v1.8.1
 )
 

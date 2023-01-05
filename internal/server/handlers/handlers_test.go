@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -14,12 +16,14 @@ import (
 
 	"github.com/caarlos0/env/v6"
 	"github.com/go-chi/chi/v5"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/rasha108bik/tiny_url/config"
 	storagefile "github.com/rasha108bik/tiny_url/internal/storage/file"
 	storage "github.com/rasha108bik/tiny_url/internal/storage/memdb"
+	pgDB "github.com/rasha108bik/tiny_url/internal/storage/postgres"
 )
 
 func TestHandlers(t *testing.T) {
@@ -38,7 +42,28 @@ func TestHandlers(t *testing.T) {
 	}
 	defer strgFile.Close()
 
-	handler := NewHandler(&cfg, memDB, strgFile, nil)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	pg := pgDB.NewMockPostgres(ctrl)
+	pg.
+		EXPECT().
+		StoreURL(gomock.Any(), gomock.Any()).
+		Return(errors.New("test")).
+		AnyTimes()
+
+	// pg.
+	// 	EXPECT().
+	// 	GetOriginalURLByShortURL(gomock.Any()).
+	// 	Return("http://jqymby.biz/wruxoh/eii7bbkvbz4oj", nil).
+	// 	AnyTimes()
+
+	// pg.
+	// 	EXPECT().
+	// 	GetAllURLs().
+	// 	Return(nil, errors.New("test")).
+	// 	AnyTimes()
+
+	handler := NewHandler(&cfg, memDB, strgFile, pg)
 
 	var shortenURL string
 	var originalURL string
@@ -65,6 +90,8 @@ func TestHandlers(t *testing.T) {
 		// проверяем URL на валидность
 		_, urlParseErr := url.Parse(shortenURL)
 		assert.NoErrorf(t, urlParseErr, "cannot parsee URL: %s ", shortenURL, err)
+
+		fmt.Println("test:  ", shortenURL)
 	})
 
 	t.Run("get", func(t *testing.T) {

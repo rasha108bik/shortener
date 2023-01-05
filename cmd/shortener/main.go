@@ -29,7 +29,7 @@ func main() {
 	defer pg.Close()
 
 	if cfg.DatabaseDSN != "" {
-		driver, err := postgres.WithInstance(pg.Postgres, &postgres.Config{})
+		driver, err := postgres.WithInstance(pg.Postgres.DB, &postgres.Config{})
 		if err != nil {
 			log.Printf("postgres.WithInstance: %v\n", err)
 		}
@@ -49,7 +49,7 @@ func main() {
 
 	filestorage, err := filestorage.NewFileStorage(cfg.FileStoragePath)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Errorf("filestorage.NewFileStorage: %v", err))
 	}
 	defer filestorage.Close()
 

@@ -28,8 +28,8 @@ func NewFileStorage(filename string) (*fileStorage, error) {
 	}, nil
 }
 
-func (f *fileStorage) StoreURL(data string) (string, error) {
-	return "", f.encoder.Encode(&data)
+func (f *fileStorage) StoreURL(originalURL string, shortURL string) error {
+	return f.encoder.Encode(&shortURL)
 }
 
 func (f *fileStorage) GetURLShortID(id string) (string, error) {
