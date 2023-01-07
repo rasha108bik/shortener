@@ -51,17 +51,17 @@ func TestHandlers(t *testing.T) {
 		Return(errors.New("test")).
 		AnyTimes()
 
-	// pg.
-	// 	EXPECT().
-	// 	GetOriginalURLByShortURL(gomock.Any()).
-	// 	Return("http://jqymby.biz/wruxoh/eii7bbkvbz4oj", nil).
-	// 	AnyTimes()
+	pg.
+		EXPECT().
+		GetOriginalURLByShortURL(gomock.Any()).
+		Return("http://jqymby.biz/wruxoh/eii7bbkvbz4oj", nil).
+		AnyTimes()
 
-	// pg.
-	// 	EXPECT().
-	// 	GetAllURLs().
-	// 	Return(nil, errors.New("test")).
-	// 	AnyTimes()
+	pg.
+		EXPECT().
+		GetAllURLs().
+		Return(nil, errors.New("test")).
+		AnyTimes()
 
 	handler := NewHandler(&cfg, memDB, strgFile, pg)
 

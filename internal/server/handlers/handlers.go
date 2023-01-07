@@ -68,12 +68,12 @@ func (h *handler) CreateShortLink(w http.ResponseWriter, r *http.Request) {
 	err = h.pg.StoreURL(originalURL, shortURL)
 	if err != nil {
 		log.Printf("pg.StoreURL: %v\n", err)
+	}
 
-		err = h.memDB.StoreURL(originalURL, shortURL)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
+	err = h.memDB.StoreURL(originalURL, shortURL)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	err = h.fileStorage.StoreURL(originalURL, shortURL)
@@ -92,19 +92,24 @@ func (h *handler) CreateShortLink(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) GetOriginalURL(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-	if id == "" {
+	shortURL := chi.URLParam(r, "id")
+	if shortURL == "" {
 		http.Error(w, "id emtpy", http.StatusBadRequest)
 		return
 	}
 
-	url, err := h.memDB.GetURLShortID(id)
+	originalURL, err := h.pg.GetOriginalURLByShortURL(shortURL)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		log.Printf("pg.GetOriginalURLByShortURL: %v\n", originalURL)
+
+		originalURL, err = h.memDB.GetURLShortID(shortURL)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 	}
 
-	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
+	http.Redirect(w, r, originalURL, http.StatusTemporaryRedirect)
 }
 
 func (h *handler) CreateShorten(w http.ResponseWriter, r *http.Request) {
@@ -119,6 +124,11 @@ func (h *handler) CreateShorten(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
+	}
+
+	err = h.pg.StoreURL(m.URL, shortURL)
+	if err != nil {
+		log.Printf("pg.StoreURL: %v\n", err)
 	}
 
 	err = h.memDB.StoreURL(m.URL, shortURL)
@@ -150,7 +160,12 @@ func (h *handler) CreateShorten(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) GetOriginalURLs(w http.ResponseWriter, r *http.Request) {
-	mapURLs := h.memDB.GetURLsShort()
+	mapURLs, err := h.pg.GetAllURLs()
+	if err != nil {
+		log.Printf("pg.mapURLs: %v\n and data urls: %v\n", err, mapURLs)
+	}
+
+	mapURLs = h.memDB.GetURLsShort()
 	if len(mapURLs) == 0 {
 		http.Error(w, errors.New("urls is empty").Error(), http.StatusNoContent)
 		return
