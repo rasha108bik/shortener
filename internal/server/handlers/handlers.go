@@ -100,15 +100,18 @@ func (h *handler) GetOriginalURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	originalURL, err := h.pg.GetOriginalURLByShortURL(shortURL)
-	if err != nil {
-		log.Printf("pg.GetOriginalURLByShortURL: %v\n", originalURL)
-
-		originalURL, err = h.memDB.GetURLShortID(shortURL)
+	if h.pg != nil {
+		originalURL, err := h.pg.GetOriginalURLByShortURL(shortURL)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
+			log.Printf("pg.GetOriginalURLByShortURL: %v\n", originalURL)
 		}
+
+	}
+
+	originalURL, err := h.memDB.GetURLShortID(shortURL)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	http.Redirect(w, r, originalURL, http.StatusTemporaryRedirect)
@@ -128,9 +131,11 @@ func (h *handler) CreateShorten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.pg.StoreURL(m.URL, shortURL)
-	if err != nil {
-		log.Printf("pg.StoreURL: %v\n", err)
+	if h.pg != nil {
+		err = h.pg.StoreURL(m.URL, shortURL)
+		if err != nil {
+			log.Printf("pg.StoreURL: %v\n", err)
+		}
 	}
 
 	err = h.memDB.StoreURL(m.URL, shortURL)
