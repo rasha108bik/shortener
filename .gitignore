@@ -2,6 +2,7 @@
 cmd/shortener/main
 cmd/shortener/shortener
 binary*
+bin*
 
 # Dependency directories (remove the comment below to include it)
 vendor/
