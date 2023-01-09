@@ -120,7 +120,7 @@ func TestHandlers(t *testing.T) {
 	t.Run("fetch_urls", func(t *testing.T) {
 		request := httptest.NewRequest(http.MethodGet, "/api/user/urls", nil)
 		w := httptest.NewRecorder()
-		h := http.HandlerFunc(handler.GetOriginalURLs)
+		h := http.HandlerFunc(handler.FetchURLs)
 
 		h(w, request)
 		result := w.Result()

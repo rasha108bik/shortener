@@ -15,7 +15,7 @@ func NewRouter(s *server.Server) *chi.Mux {
 	r.MethodNotAllowed(s.Handlers.ErrorHandler)
 	r.Get("/ping", s.Handlers.Ping)
 	r.Get("/{id}", s.Handlers.GetOriginalURL)
-	r.Get("/api/user/urls", s.Handlers.GetOriginalURLs)
+	r.Get("/api/user/urls", s.Handlers.FetchURLs)
 	r.Post("/api/shorten", s.Handlers.CreateShorten)
 	r.Post("/", s.Handlers.CreateShortLink)
 

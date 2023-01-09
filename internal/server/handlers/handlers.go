@@ -20,7 +20,7 @@ type Handlers interface {
 	CreateShorten(w http.ResponseWriter, r *http.Request)
 	CreateShortLink(w http.ResponseWriter, r *http.Request)
 	GetOriginalURL(w http.ResponseWriter, r *http.Request)
-	GetOriginalURLs(w http.ResponseWriter, r *http.Request)
+	FetchURLs(w http.ResponseWriter, r *http.Request)
 	ErrorHandler(w http.ResponseWriter, r *http.Request)
 	Ping(w http.ResponseWriter, r *http.Request)
 }
@@ -167,7 +167,7 @@ func (h *handler) CreateShorten(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *handler) GetOriginalURLs(w http.ResponseWriter, r *http.Request) {
+func (h *handler) FetchURLs(w http.ResponseWriter, r *http.Request) {
 	mapURLs, err := h.pg.GetAllURLs()
 	if err != nil {
 		log.Printf("pg.mapURLs: %v\n and data urls: %v\n", err, mapURLs)
