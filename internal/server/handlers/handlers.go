@@ -168,12 +168,14 @@ func (h *handler) CreateShorten(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) FetchURLs(w http.ResponseWriter, r *http.Request) {
-	mapURLs, err := h.pg.GetAllURLs()
-	if err != nil {
-		log.Printf("pg.mapURLs: %v\n and data urls: %v\n", err, mapURLs)
-	}
+	// if &h.pg == (*postgres.Postgres)(nil) {
+	// 	mapURLs, err := h.pg.GetAllURLs()
+	// 	if err != nil {
+	// 		log.Printf("pg.mapURLs: %v\n and data urls: %v\n", err, mapURLs)
+	// 	}
+	// }
 
-	mapURLs = h.memDB.GetURLsShort()
+	mapURLs := h.memDB.GetURLsShort()
 	if len(mapURLs) == 0 {
 		http.Error(w, errors.New("urls is empty").Error(), http.StatusNoContent)
 		return
