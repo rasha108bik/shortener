@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
@@ -111,8 +112,8 @@ func (p *postgres) StoreURL(originalURL string, shortURL string) error {
 func (p *postgres) GetOriginalURLByShortURL(shortURL string) (string, error) {
 	var shortLink ShortLink
 	err := p.Postgres.Get(&shortLink, "SELECT * FROM short_links WHERE short_url=$1", shortURL)
-	if err != nil {
-		return "", err
+	if err == sql.ErrNoRows {
+		return "", sql.ErrNoRows
 	}
 
 	return shortLink.OriginalURL, nil
