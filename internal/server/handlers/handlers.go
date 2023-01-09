@@ -105,7 +105,6 @@ func (h *handler) GetOriginalURL(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Printf("pg.GetOriginalURLByShortURL: %v\n", originalURL)
 		}
-
 	}
 
 	originalURL, err := h.memDB.GetURLShortID(shortURL)
