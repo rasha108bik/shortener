@@ -65,9 +65,11 @@ func (h *handler) CreateShortLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.pg.StoreURL(originalURL, shortURL)
-	if err != nil {
-		log.Printf("pg.StoreURL: %v\n", err)
+	if h.pg != nil {
+		err = h.pg.StoreURL(originalURL, shortURL)
+		if err != nil {
+			log.Printf("pg.StoreURL: %v\n", err)
+		}
 	}
 
 	err = h.memDB.StoreURL(originalURL, shortURL)
