@@ -66,7 +66,7 @@ func (h *handler) CreateShortLink(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("h.pg testtest: %#v\n", h.pg)
-	if &h.pg == (*postgres.Postgres)(nil) {
+	if &h.pg != (*postgres.Postgres)(nil) {
 		log.Printf("test cancel\n")
 		err = h.pg.StoreURL(originalURL, shortURL)
 		if err != nil {
@@ -102,7 +102,7 @@ func (h *handler) GetOriginalURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if &h.pg == (*postgres.Postgres)(nil) {
+	if &h.pg != (*postgres.Postgres)(nil) {
 		originalURL, err := h.pg.GetOriginalURLByShortURL(shortURL)
 		if err != nil {
 			log.Printf("pg.GetOriginalURLByShortURL: %v\n", originalURL)
@@ -132,7 +132,7 @@ func (h *handler) CreateShorten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if &h.pg == (*postgres.Postgres)(nil) {
+	if &h.pg != (*postgres.Postgres)(nil) {
 		err = h.pg.StoreURL(m.URL, shortURL)
 		if err != nil {
 			log.Printf("pg.StoreURL: %v\n", err)
