@@ -22,6 +22,13 @@ func main() {
 
 	log.Printf("%+v\n", cfg)
 
+	// TODO after delete and change pgcon
+	var pgcon bool
+	if cfg.DatabaseDSN != "" {
+		log.Printf("pgcon: %v\n", pgcon)
+		pgcon = true
+	}
+
 	pg, err := pgDB.New(cfg.DatabaseDSN)
 	if err != nil {
 		log.Printf("pgDB.New: %v\n", err)
@@ -54,7 +61,7 @@ func main() {
 	defer filestorage.Close()
 
 	memDB := storage.NewMemDB()
-	h := handlers.NewHandler(cfg, memDB, filestorage, pg)
+	h := handlers.NewHandler(cfg, memDB, filestorage, pg, pgcon)
 	serv := server.NewServer(h)
 	r := router.NewRouter(serv)
 

@@ -63,7 +63,7 @@ func TestHandlers(t *testing.T) {
 		Return(nil, errors.New("test")).
 		AnyTimes()
 
-	handler := NewHandler(&cfg, memDB, strgFile, pg)
+	handler := NewHandler(&cfg, memDB, strgFile, pg, true)
 
 	var shortenURL string
 	var originalURL string

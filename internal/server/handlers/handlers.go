@@ -30,6 +30,7 @@ type handler struct {
 	memDB       storage.Storager
 	fileStorage storage.Storager
 	pg          postgres.Postgres
+	pgcon       bool
 }
 
 func NewHandler(
@@ -37,12 +38,14 @@ func NewHandler(
 	memDB storage.Storager,
 	fileStorage storage.Storager,
 	pg postgres.Postgres,
+	pgcon bool,
 ) *handler {
 	return &handler{
 		cfg:         cfg,
 		memDB:       memDB,
 		fileStorage: fileStorage,
 		pg:          pg,
+		pgcon:       pgcon,
 	}
 }
 
@@ -65,9 +68,8 @@ func (h *handler) CreateShortLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("h.pg testtest: %#v\n", h.pg)
-	if &h.pg != (*postgres.Postgres)(nil) {
-		log.Printf("test cancel\n")
+	log.Printf("h.pgcon: %#v\n", h.pgcon)
+	if h.pgcon {
 		err = h.pg.StoreURL(originalURL, shortURL)
 		if err != nil {
 			log.Printf("pg.StoreURL: %v\n", err)
@@ -102,7 +104,7 @@ func (h *handler) GetOriginalURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if &h.pg != (*postgres.Postgres)(nil) {
+	if h.pgcon {
 		originalURL, err := h.pg.GetOriginalURLByShortURL(shortURL)
 		if err != nil {
 			log.Printf("pg.GetOriginalURLByShortURL: %v\n", originalURL)
@@ -132,7 +134,7 @@ func (h *handler) CreateShorten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if &h.pg != (*postgres.Postgres)(nil) {
+	if h.pgcon {
 		err = h.pg.StoreURL(m.URL, shortURL)
 		if err != nil {
 			log.Printf("pg.StoreURL: %v\n", err)
@@ -168,7 +170,7 @@ func (h *handler) CreateShorten(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) FetchURLs(w http.ResponseWriter, r *http.Request) {
-	// if &h.pg == (*postgres.Postgres)(nil) {
+	// if h.pgcon {
 	// 	mapURLs, err := h.pg.GetAllURLs()
 	// 	if err != nil {
 	// 		log.Printf("pg.mapURLs: %v\n and data urls: %v\n", err, mapURLs)
