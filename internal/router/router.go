@@ -18,6 +18,7 @@ func NewRouter(s *server.Server) *chi.Mux {
 	r.Get("/api/user/urls", s.Handlers.FetchURLs)
 	r.Post("/api/shorten", s.Handlers.CreateShorten)
 	r.Post("/", s.Handlers.CreateShortLink)
+	r.Post("/api/shorten/batch", s.Handlers.ShortenBatch)
 
 	return r
 }

@@ -23,6 +23,7 @@ type Handlers interface {
 	FetchURLs(w http.ResponseWriter, r *http.Request)
 	ErrorHandler(w http.ResponseWriter, r *http.Request)
 	Ping(w http.ResponseWriter, r *http.Request)
+	ShortenBatch(w http.ResponseWriter, r *http.Request)
 }
 
 type handler struct {
@@ -221,4 +222,61 @@ func (h *handler) Ping(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (h *handler) ShortenBatch(w http.ResponseWriter, r *http.Request) {
+	m := []ReqShortenBatch{}
+	err := json.NewDecoder(r.Body).Decode(&m)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	respShortenBatch := []RespShortenBatch{}
+	for _, v := range m {
+		shortURL, err := storage.GenerateUniqKey()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		log.Printf("h.pgcon: %#v\n", h.pgcon)
+		if h.pgcon {
+			err = h.pg.StoreURL(v.OriginalURL, shortURL)
+			if err != nil {
+				log.Printf("pg.StoreURL: %v\n", err)
+			}
+		}
+
+		err = h.memDB.StoreURL(v.OriginalURL, shortURL)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		err = h.fileStorage.StoreURL(v.OriginalURL, shortURL)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		respShortenBatch = append(respShortenBatch, RespShortenBatch{
+			CorrelationID: v.CorrelationID,
+			ShortURL:      h.cfg.BaseURL + "/" + shortURL,
+		})
+	}
+
+	res, err := json.Marshal(respShortenBatch)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	_, err = w.Write(res)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
