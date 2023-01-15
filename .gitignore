@@ -8,7 +8,11 @@ vendor/
 # IDEs directories
 .idea
 .vscode
+.DS_Store
 
 # vim swp
 *.swp
 *.swo
+
+# files for save urls
+URLs.log
