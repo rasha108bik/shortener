@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"io"
@@ -14,7 +13,7 @@ import (
 
 	"github.com/rasha108bik/tiny_url/config"
 	appErr "github.com/rasha108bik/tiny_url/internal/errors"
-	"github.com/rasha108bik/tiny_url/internal/storage"
+	"github.com/rasha108bik/tiny_url/internal/storager"
 )
 
 type Handlers interface {
@@ -28,26 +27,17 @@ type Handlers interface {
 }
 
 type handler struct {
-	cfg         *config.Config
-	memDB       storage.Storager
-	fileStorage storage.Storager
-	pg          storage.Storager
-	pgcon       bool
+	cfg *config.Config
+	str storager.Storager
 }
 
 func NewHandler(
 	cfg *config.Config,
-	memDB storage.Storager,
-	fileStorage storage.Storager,
-	pg storage.Storager,
-	pgcon bool,
+	str storager.Storager,
 ) *handler {
 	return &handler{
-		cfg:         cfg,
-		memDB:       memDB,
-		fileStorage: fileStorage,
-		pg:          pg,
-		pgcon:       pgcon,
+		cfg: cfg,
+		str: str,
 	}
 }
 
@@ -64,32 +54,13 @@ func (h *handler) CreateShortLink(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	originalURL := string(resBody)
-	shortURL, err := storage.GenerateUniqKey()
+	shortURL, err := storager.GenerateUniqKey()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if h.pgcon {
-		shrURL, err := h.pg.GetShortURLByOriginalURL(originalURL)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				err = h.pg.StoreURL(originalURL, shortURL)
-				if err != nil {
-					log.Printf("pg.StoreURL: %v\n", err)
-				}
-			} else {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-		}
-		if shrURL != "" {
-			respCreateShortLink(w, http.StatusConflict, h.cfg.BaseURL, shrURL)
-			return
-		}
-	}
-
-	shrURL, err := h.memDB.GetShortURLByOriginalURL(originalURL)
+	shrURL, err := h.str.GetShortURLByOriginalURL(originalURL)
 	if err != nil {
 		if errors.Is(err, appErr.ErrOriginalURLExist) {
 			respCreateShortLink(w, http.StatusConflict, h.cfg.BaseURL, shrURL)
@@ -97,15 +68,14 @@ func (h *handler) CreateShortLink(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	err = h.memDB.StoreURL(originalURL, shortURL)
+	// if shrURL != "" {
+	// 	respCreateShorten(w, http.StatusConflict, h.cfg.BaseURL, shrURL)
+	// 	return
+	// }
+
+	err = h.str.StoreURL(originalURL, shortURL)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	err = h.fileStorage.StoreURL(originalURL, shortURL)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -131,32 +101,13 @@ func (h *handler) CreateShorten(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("ReqCreateShorten: %v", m)
-	shortURL, err := storage.GenerateUniqKey()
+	shortURL, err := storager.GenerateUniqKey()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if h.pgcon {
-		shrURL, err := h.pg.GetShortURLByOriginalURL(m.URL)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				err = h.pg.StoreURL(m.URL, shortURL)
-				if err != nil {
-					log.Printf("pg.StoreURL: %v\n", err)
-				}
-			} else {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-		}
-		if shrURL != "" {
-			respCreateShorten(w, http.StatusConflict, h.cfg.BaseURL, shrURL)
-			return
-		}
-	}
-
-	shrURL, err := h.memDB.GetShortURLByOriginalURL(m.URL)
+	shrURL, err := h.str.GetShortURLByOriginalURL(m.URL)
 	if err != nil {
 		if errors.Is(err, appErr.ErrOriginalURLExist) {
 			respCreateShorten(w, http.StatusConflict, h.cfg.BaseURL, shrURL)
@@ -164,15 +115,14 @@ func (h *handler) CreateShorten(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	err = h.memDB.StoreURL(m.URL, shortURL)
+	// if shrURL != "" {
+	// 	respCreateShorten(w, http.StatusConflict, h.cfg.BaseURL, shrURL)
+	// 	return
+	// }
+
+	err = h.str.StoreURL(m.URL, shortURL)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	err = h.fileStorage.StoreURL(m.URL, shortURL)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -205,14 +155,7 @@ func (h *handler) GetOriginalURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if h.pgcon {
-		originalURL, err := h.pg.GetOriginalURLByShortURL(shortURL)
-		if err != nil {
-			log.Printf("pg.GetOriginalURLByShortURL: %v\n", originalURL)
-		}
-	}
-
-	originalURL, err := h.memDB.GetOriginalURLByShortURL(shortURL)
+	originalURL, err := h.str.GetOriginalURLByShortURL(shortURL)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -222,7 +165,7 @@ func (h *handler) GetOriginalURL(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) FetchURLs(w http.ResponseWriter, r *http.Request) {
-	mapURLs, _ := h.memDB.GetAllURLs()
+	mapURLs, _ := h.str.GetAllURLs()
 	if len(mapURLs) == 0 {
 		http.Error(w, errors.New("urls is empty").Error(), http.StatusNoContent)
 		return
@@ -259,7 +202,7 @@ func (h *handler) Ping(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
-	err := h.pg.Ping(ctx)
+	err := h.str.Ping(ctx)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -278,28 +221,28 @@ func (h *handler) ShortenBatch(w http.ResponseWriter, r *http.Request) {
 
 	respShortenBatch := []RespShortenBatch{}
 	for _, v := range m {
-		shortURL, err := storage.GenerateUniqKey()
+		shortURL, err := storager.GenerateUniqKey()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		if h.pgcon {
-			err = h.pg.StoreURL(v.OriginalURL, shortURL)
-			if err != nil {
-				log.Printf("pg.StoreURL: %v\n", err)
+		shrURL, err := h.str.GetShortURLByOriginalURL(v.OriginalURL)
+		if err != nil {
+			if errors.Is(err, appErr.ErrOriginalURLExist) {
+				respCreateShorten(w, http.StatusConflict, h.cfg.BaseURL, shrURL)
+				return
 			}
 		}
 
-		err = h.memDB.StoreURL(v.OriginalURL, shortURL)
+		// if shrURL != "" {
+		// 	respCreateShorten(w, http.StatusConflict, h.cfg.BaseURL, shrURL)
+		// 	return
+		// }
+
+		err = h.str.StoreURL(v.OriginalURL, shortURL)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		err = h.fileStorage.StoreURL(v.OriginalURL, shortURL)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 

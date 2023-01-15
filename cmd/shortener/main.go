@@ -1,72 +1,33 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"net/http"
+	"os"
 
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/rasha108bik/tiny_url/config"
-	"github.com/rasha108bik/tiny_url/internal/router"
 	"github.com/rasha108bik/tiny_url/internal/server"
 	"github.com/rasha108bik/tiny_url/internal/server/handlers"
-	filestorage "github.com/rasha108bik/tiny_url/internal/storage/file"
-	storage "github.com/rasha108bik/tiny_url/internal/storage/memdb"
-	pgDB "github.com/rasha108bik/tiny_url/internal/storage/postgres"
+	"github.com/rasha108bik/tiny_url/internal/storager"
+	"github.com/rs/zerolog"
 )
 
 func main() {
+	log := zerolog.New(os.Stdout).Level(zerolog.DebugLevel)
+
 	cfg := config.NewConfig()
 
 	log.Printf("%+v\n", cfg)
 
-	// TODO after delete and change pgcon
-	var pgcon bool
-	if cfg.DatabaseDSN != "" {
-		pgcon = true
-	}
-	log.Printf("pgcon: %v\n", pgcon)
-
-	pg, err := pgDB.New(cfg.DatabaseDSN)
+	str, err := storager.NewStorager(cfg)
 	if err != nil {
 		log.Printf("pgDB.New: %v\n", err)
 	}
-	defer pg.Close()
+	defer str.Close()
 
-	if cfg.DatabaseDSN != "" {
-		driver, err := postgres.WithInstance(pg.Postgres.DB, &postgres.Config{})
-		if err != nil {
-			log.Printf("postgres.WithInstance: %v\n", err)
-		}
+	h := handlers.NewHandler(cfg, str)
+	serv := server.NewServer(h, cfg.ServerAddress)
 
-		m, err := migrate.NewWithDatabaseInstance(
-			"file://migrations",
-			"pgx", driver)
-		if err != nil {
-			log.Printf("migrate.NewWithDatabaseInstance: %v\n", err)
-		}
-
-		err = m.Up() // or m.Step(2) if you want to explicitly set the number of migrations to run
-		if err != nil && err != migrate.ErrNoChange {
-			log.Fatal(fmt.Errorf("migrate failed: %v", err))
-		}
-	}
-
-	filestorage, err := filestorage.NewFileStorage(cfg.FileStoragePath)
+	err = serv.ListenAndServe()
 	if err != nil {
-		log.Fatal(fmt.Errorf("filestorage.NewFileStorage: %v", err))
-	}
-	defer filestorage.Close()
-
-	memDB := storage.NewMemDB()
-	h := handlers.NewHandler(cfg, memDB, filestorage, pg, pgcon)
-	serv := server.NewServer(h)
-	r := router.NewRouter(serv)
-
-	err = http.ListenAndServe(cfg.ServerAddress, r)
-	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err)
 	}
 }

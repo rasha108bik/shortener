@@ -53,3 +53,7 @@ func (f *memDB) GetShortURLByOriginalURL(originalURL string) (string, error) {
 func (f *memDB) Ping(ctx context.Context) error {
 	return nil
 }
+
+func (f *memDB) Close() error {
+	return nil
+}

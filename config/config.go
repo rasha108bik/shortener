@@ -10,7 +10,7 @@ import (
 type Config struct {
 	ServerAddress   string `env:"SERVER_ADDRESS" envDefault:":8080"`
 	BaseURL         string `env:"BASE_URL" envDefault:"http://localhost:8080"`
-	FileStoragePath string `env:"FILE_STORAGE_PATH" envDefault:"URLs.log"`
+	FileStoragePath string `env:"FILE_STORAGE_PATH" envDefault:""`
 	DatabaseDSN     string `env:"DATABASE_DSN" envDefault:""`
 }
 
@@ -44,12 +44,8 @@ func NewConfig() *Config {
 	if baseURL != "" {
 		cfg.BaseURL = baseURL
 	}
-	if fileStoragePath != "" {
-		cfg.FileStoragePath = fileStoragePath
-	}
-	if databaseDSN != "" {
-		cfg.DatabaseDSN = databaseDSN
-	}
+	cfg.FileStoragePath = fileStoragePath
+	cfg.DatabaseDSN = databaseDSN
 
 	return &cfg
 }
