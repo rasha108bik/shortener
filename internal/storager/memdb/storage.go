@@ -19,7 +19,7 @@ func NewMemDB() *memDB {
 	}
 }
 
-func (m *memDB) StoreURL(originalURL string, shortURL string) error {
+func (m *memDB) StoreURL(_ context.Context, originalURL string, shortURL string) error {
 	if _, err := url.ParseRequestURI(originalURL); err != nil {
 		return err
 	}
@@ -31,21 +31,22 @@ func (m *memDB) StoreURL(originalURL string, shortURL string) error {
 	return nil
 }
 
-func (m *memDB) GetOriginalURLByShortURL(shortURL string) (string, error) {
+func (m *memDB) GetOriginalURLByShortURL(_ context.Context, shortURL string) (string, error) {
 	if url, ok := m.locations[shortURL]; ok {
 		return url, nil
 	}
-	return "", appErr.ErrNoSuchID
+
+	return "", appErr.ErrURLDeleted
 }
 
-func (m *memDB) GetAllURLs() (map[string]string, error) {
+func (m *memDB) GetAllURLs(_ context.Context) (map[string]string, error) {
 	m.mtx.RLock()
 	defer m.mtx.RUnlock()
 
 	return m.locations, nil
 }
 
-func (m *memDB) GetShortURLByOriginalURL(originalURL string) (string, error) {
+func (m *memDB) GetShortURLByOriginalURL(_ context.Context, originalURL string) (string, error) {
 	if _, err := url.ParseRequestURI(originalURL); err != nil {
 		return "", err
 	}
@@ -61,10 +62,15 @@ func (m *memDB) GetShortURLByOriginalURL(originalURL string) (string, error) {
 	return "", appErr.ErrNoSuchID
 }
 
-func (m *memDB) Ping(ctx context.Context) error {
+func (m *memDB) Ping(_ context.Context) error {
 	return nil
 }
 
 func (m *memDB) Close() error {
+	return nil
+}
+
+func (m *memDB) DeleteURLByShortURL(_ context.Context, shortURL string) error {
+	delete(m.locations, shortURL)
 	return nil
 }

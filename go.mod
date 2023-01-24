@@ -10,6 +10,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/jackc/pgx/v5 v5.2.0
 	github.com/jmoiron/sqlx v1.3.1
+	github.com/jxskiss/base62 v1.1.0
 	github.com/rs/zerolog v1.15.0
 	github.com/stretchr/testify v1.8.1
 )

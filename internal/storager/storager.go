@@ -12,10 +12,11 @@ import (
 
 //go:generate bin/mockgen -source=postgres.go -package=$GOPACKAGE -destination=postgres_interface_mock.go
 type Storager interface {
-	StoreURL(originalURL string, shortURL string) error
-	GetOriginalURLByShortURL(shortURL string) (string, error)
-	GetAllURLs() (map[string]string, error)
-	GetShortURLByOriginalURL(originalURL string) (string, error)
+	StoreURL(ctx context.Context, originalURL string, shortURL string) error
+	GetOriginalURLByShortURL(ctx context.Context, shortURL string) (string, error)
+	GetAllURLs(ctx context.Context) (map[string]string, error)
+	GetShortURLByOriginalURL(ctx context.Context, originalURL string) (string, error)
+	DeleteURLByShortURL(ctx context.Context, shortlURLs string) error
 	Ping(ctx context.Context) error
 	Close() error
 }

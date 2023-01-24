@@ -21,16 +21,14 @@ var (
 	databaseDSN     string
 )
 
-func init() {
+func NewConfig() *Config {
 	flag.StringVar(&serverAddress, "a", "", "server address")
 	flag.StringVar(&baseURL, "b", "", "base URL")
 	flag.StringVar(&fileStoragePath, "f", "", "file storage path")
 	flag.StringVar(&databaseDSN, "d", "", "	databaseDSN path")
-}
 
-func NewConfig() *Config {
 	flag.Parse()
-	log.Printf("server address: %s, base URL: %s, file storagePath: %s\n", serverAddress, baseURL, fileStoragePath)
+	log.Printf("server address: %s, base URL: %s, file storagePath: %s databaseDSN: %s\n", serverAddress, baseURL, fileStoragePath, databaseDSN)
 
 	var cfg Config
 	err := env.Parse(&cfg)
@@ -44,6 +42,7 @@ func NewConfig() *Config {
 	if baseURL != "" {
 		cfg.BaseURL = baseURL
 	}
+
 	cfg.FileStoragePath = fileStoragePath
 	cfg.DatabaseDSN = databaseDSN
 

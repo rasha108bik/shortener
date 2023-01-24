@@ -11,15 +11,18 @@ import (
 	"net/http/httptest"
 	"net/http/httputil"
 	"net/url"
+	"os"
 	"strings"
 	"testing"
 
 	"github.com/caarlos0/env/v6"
 	"github.com/go-chi/chi/v5"
+	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/rasha108bik/tiny_url/config"
+	"github.com/rasha108bik/tiny_url/internal/server/handlers/models"
 	"github.com/rasha108bik/tiny_url/internal/storager"
 )
 
@@ -37,7 +40,8 @@ func TestHandlers(t *testing.T) {
 	}
 	defer str.Close()
 
-	handler := NewHandler(&cfg, str)
+	log := zerolog.New(os.Stdout).Level(zerolog.DebugLevel)
+	handler := NewHandler(&log, &cfg, str)
 
 	var shortenURL string
 	var originalURL string
@@ -102,11 +106,11 @@ func TestHandlers(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, result.StatusCode)
 
-		m := []RespGetOriginalURLs{}
+		m := []models.RespGetOriginalURLs{}
 		err = json.NewDecoder(result.Body).Decode(&m)
 		require.NoError(t, err)
 
-		expectedBody := []RespGetOriginalURLs{
+		expectedBody := []models.RespGetOriginalURLs{
 			{
 				ShortURL:    shortenURL,
 				OriginalURL: originalURL,
@@ -136,7 +140,7 @@ func TestHandlers(t *testing.T) {
 		assert.Equal(t, http.StatusCreated, result.StatusCode)
 		assert.Equal(t, "application/json", result.Header.Get("Content-Type"))
 
-		m := RespReqCreateShorten{}
+		m := models.RespReqCreateShorten{}
 		err = json.NewDecoder(result.Body).Decode(&m)
 		require.NoError(t, err)
 
@@ -160,7 +164,8 @@ func TestHandlersStatusConflict(t *testing.T) {
 	}
 	defer str.Close()
 
-	handler := NewHandler(&cfg, str)
+	log := zerolog.New(os.Stdout).Level(zerolog.DebugLevel)
+	handler := NewHandler(&log, &cfg, str)
 
 	var shortenURL string
 	var originalURL string
@@ -230,9 +235,10 @@ func TestHandlersBatchRequest(t *testing.T) {
 	}
 	defer str.Close()
 
-	handler := NewHandler(&cfg, str)
+	log := zerolog.New(os.Stdout).Level(zerolog.DebugLevel)
+	handler := NewHandler(&log, &cfg, str)
 
-	requestData := []ReqShortenBatch{
+	requestData := []models.ReqShortenBatch{
 		{
 			CorrelationID: "1",
 			OriginalURL:   "http://fsdkfkldshfjs.ru/test1",
@@ -269,7 +275,7 @@ func TestHandlersBatchRequest(t *testing.T) {
 		assert.Equal(t, http.StatusCreated, result.StatusCode)
 		assert.Equal(t, "application/json", result.Header.Get("Content-Type"))
 
-		m := []RespShortenBatch{}
+		m := []models.RespShortenBatch{}
 		err = json.NewDecoder(result.Body).Decode(&m)
 		require.NoError(t, err)
 

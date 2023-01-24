@@ -19,6 +19,7 @@ func NewRouter(s handlers.Handlers) *chi.Mux {
 	r.Post("/api/shorten", s.CreateShorten)
 	r.Post("/", s.CreateShortLink)
 	r.Post("/api/shorten/batch", s.ShortenBatch)
+	r.Delete("/api/user/urls", s.DeleteURLs)
 
 	return r
 }

@@ -1,4 +1,4 @@
-package handlers
+package models
 
 type ReqCreateShorten struct {
 	URL string `json:"url"`

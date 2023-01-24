@@ -29,7 +29,7 @@ func NewFileStorage(filename string) (*fileStorage, error) {
 	}, nil
 }
 
-func (f *fileStorage) StoreURL(originalURL string, shortURL string) error {
+func (f *fileStorage) StoreURL(ctx context.Context, originalURL string, shortURL string) error {
 	data, err := json.Marshal(
 		&Event{
 			OriginalURL: originalURL,
@@ -58,7 +58,7 @@ func (f *fileStorage) StoreURL(originalURL string, shortURL string) error {
 	return nil
 }
 
-func (f *fileStorage) GetOriginalURLByShortURL(shortURL string) (string, error) {
+func (f *fileStorage) GetOriginalURLByShortURL(ctx context.Context, shortURL string) (string, error) {
 	f.file.Seek(0, io.SeekStart)
 
 	scanner := bufio.NewScanner(f.file)
@@ -78,7 +78,7 @@ func (f *fileStorage) GetOriginalURLByShortURL(shortURL string) (string, error) 
 	return "", appErr.ErrNoSuchID
 }
 
-func (f *fileStorage) GetAllURLs() (map[string]string, error) {
+func (f *fileStorage) GetAllURLs(ctx context.Context) (map[string]string, error) {
 	f.file.Seek(0, io.SeekStart)
 
 	res := make(map[string]string)
@@ -97,7 +97,7 @@ func (f *fileStorage) GetAllURLs() (map[string]string, error) {
 	return res, nil
 }
 
-func (f *fileStorage) GetShortURLByOriginalURL(originalURL string) (string, error) {
+func (f *fileStorage) GetShortURLByOriginalURL(ctx context.Context, originalURL string) (string, error) {
 	f.file.Seek(0, io.SeekStart)
 
 	scanner := bufio.NewScanner(f.file)
@@ -122,5 +122,9 @@ func (f *fileStorage) Close() error {
 }
 
 func (f *fileStorage) Ping(ctx context.Context) error {
+	return nil
+}
+
+func (f *fileStorage) DeleteURLByShortURL(ctx context.Context, shortlURL string) error {
 	return nil
 }

@@ -23,7 +23,7 @@ func main() {
 	}
 	defer str.Close()
 
-	h := handlers.NewHandler(cfg, str)
+	h := handlers.NewHandler(&log, cfg, str)
 	serv := server.NewServer(h, cfg.ServerAddress)
 
 	err = serv.ListenAndServe()
