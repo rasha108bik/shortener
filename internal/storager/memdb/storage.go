@@ -3,45 +3,56 @@ package storage
 import (
 	"context"
 	"net/url"
+	"sync"
 
 	appErr "github.com/rasha108bik/tiny_url/internal/errors"
 )
 
 type memDB struct {
-	Locations map[string]string
+	locations map[string]string
+	mtx       sync.RWMutex
 }
 
 func NewMemDB() *memDB {
 	return &memDB{
-		Locations: make(map[string]string),
+		locations: make(map[string]string),
 	}
 }
 
-func (f *memDB) StoreURL(originalURL string, shortURL string) error {
+func (m *memDB) StoreURL(originalURL string, shortURL string) error {
 	if _, err := url.ParseRequestURI(originalURL); err != nil {
 		return err
 	}
 
-	f.Locations[shortURL] = originalURL
+	m.mtx.RLock()
+	m.locations[shortURL] = originalURL
+	m.mtx.RUnlock()
+
 	return nil
 }
 
-func (f *memDB) GetOriginalURLByShortURL(shortURL string) (string, error) {
-	if url, ok := f.Locations[shortURL]; ok {
+func (m *memDB) GetOriginalURLByShortURL(shortURL string) (string, error) {
+	if url, ok := m.locations[shortURL]; ok {
 		return url, nil
 	}
 	return "", appErr.ErrNoSuchID
 }
 
-func (f *memDB) GetAllURLs() (map[string]string, error) {
-	return f.Locations, nil
+func (m *memDB) GetAllURLs() (map[string]string, error) {
+	m.mtx.RLock()
+	defer m.mtx.RUnlock()
+
+	return m.locations, nil
 }
 
-func (f *memDB) GetShortURLByOriginalURL(originalURL string) (string, error) {
+func (m *memDB) GetShortURLByOriginalURL(originalURL string) (string, error) {
 	if _, err := url.ParseRequestURI(originalURL); err != nil {
 		return "", err
 	}
-	for shURL, orURL := range f.Locations {
+
+	m.mtx.RLock()
+	defer m.mtx.RUnlock()
+	for shURL, orURL := range m.locations {
 		if orURL == originalURL {
 			return shURL, appErr.ErrOriginalURLExist
 		}
@@ -50,10 +61,10 @@ func (f *memDB) GetShortURLByOriginalURL(originalURL string) (string, error) {
 	return "", appErr.ErrNoSuchID
 }
 
-func (f *memDB) Ping(ctx context.Context) error {
+func (m *memDB) Ping(ctx context.Context) error {
 	return nil
 }
 
-func (f *memDB) Close() error {
+func (m *memDB) Close() error {
 	return nil
 }

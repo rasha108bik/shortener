@@ -16,7 +16,7 @@ import (
 )
 
 type psg struct {
-	Psg *sqlx.DB
+	psg *sqlx.DB
 }
 
 func NewPostgres(connString string) (*psg, error) {
@@ -31,12 +31,12 @@ func NewPostgres(connString string) (*psg, error) {
 	}
 
 	return &psg{
-		Psg: db,
+		psg: db,
 	}, nil
 }
 
 func (p *psg) Close() error {
-	return p.Psg.Close()
+	return p.psg.Close()
 }
 
 func migrateUP(db *sqlx.DB) error {
@@ -69,7 +69,7 @@ type ShortLink struct {
 }
 
 func (p *psg) StoreURL(originalURL string, shortURL string) error {
-	_, err := p.Psg.NamedExec(`INSERT INTO short_links (short_url, original_url)
+	_, err := p.psg.NamedExec(`INSERT INTO short_links (short_url, original_url)
 	VALUES (:short_url, :original_url)`, &ShortLink{ShortURL: shortURL, OriginalURL: originalURL})
 	if err != nil {
 		return err
@@ -80,7 +80,7 @@ func (p *psg) StoreURL(originalURL string, shortURL string) error {
 
 func (p *psg) GetOriginalURLByShortURL(shortURL string) (string, error) {
 	var shortLink ShortLink
-	err := p.Psg.Get(&shortLink, "SELECT * FROM short_links WHERE short_url=$1", shortURL)
+	err := p.psg.Get(&shortLink, "SELECT * FROM short_links WHERE short_url=$1", shortURL)
 	if err == sql.ErrNoRows {
 		return "", sql.ErrNoRows
 	}
@@ -90,7 +90,7 @@ func (p *psg) GetOriginalURLByShortURL(shortURL string) (string, error) {
 
 func (p *psg) GetAllURLs() (map[string]string, error) {
 	var shortLink []ShortLink
-	err := p.Psg.Select(&shortLink, "SELECT * FROM short_links")
+	err := p.psg.Select(&shortLink, "SELECT * FROM short_links")
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +105,7 @@ func (p *psg) GetAllURLs() (map[string]string, error) {
 
 func (p *psg) GetShortURLByOriginalURL(originalURL string) (string, error) {
 	var shortLink ShortLink
-	err := p.Psg.Get(&shortLink, "SELECT * FROM short_links WHERE original_url=$1", originalURL)
+	err := p.psg.Get(&shortLink, "SELECT * FROM short_links WHERE original_url=$1", originalURL)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return "", sql.ErrNoRows
@@ -117,7 +117,7 @@ func (p *psg) GetShortURLByOriginalURL(originalURL string) (string, error) {
 }
 
 func (p *psg) Ping(ctx context.Context) error {
-	err := p.Psg.PingContext(ctx)
+	err := p.psg.PingContext(ctx)
 	if err != nil {
 		return err
 	}

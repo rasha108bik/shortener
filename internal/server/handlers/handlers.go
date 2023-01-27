@@ -68,11 +68,6 @@ func (h *handler) CreateShortLink(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// if shrURL != "" {
-	// 	respCreateShorten(w, http.StatusConflict, h.cfg.BaseURL, shrURL)
-	// 	return
-	// }
-
 	err = h.str.StoreURL(originalURL, shortURL)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -114,11 +109,6 @@ func (h *handler) CreateShorten(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
-	// if shrURL != "" {
-	// 	respCreateShorten(w, http.StatusConflict, h.cfg.BaseURL, shrURL)
-	// 	return
-	// }
 
 	err = h.str.StoreURL(m.URL, shortURL)
 	if err != nil {
@@ -234,11 +224,6 @@ func (h *handler) ShortenBatch(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-
-		// if shrURL != "" {
-		// 	respCreateShorten(w, http.StatusConflict, h.cfg.BaseURL, shrURL)
-		// 	return
-		// }
 
 		err = h.str.StoreURL(v.OriginalURL, shortURL)
 		if err != nil {
