@@ -1,36 +1,33 @@
 package main
 
 import (
-	"log"
-	"net/http"
+	"os"
 
 	"github.com/rasha108bik/tiny_url/config"
-	"github.com/rasha108bik/tiny_url/internal/router"
 	"github.com/rasha108bik/tiny_url/internal/server"
 	"github.com/rasha108bik/tiny_url/internal/server/handlers"
-	storage "github.com/rasha108bik/tiny_url/internal/storage/db"
-	filestorage "github.com/rasha108bik/tiny_url/internal/storage/file"
+	"github.com/rasha108bik/tiny_url/internal/storager"
+	"github.com/rs/zerolog"
 )
 
 func main() {
+	log := zerolog.New(os.Stdout).Level(zerolog.DebugLevel)
+
 	cfg := config.NewConfig()
 
 	log.Printf("%+v\n", cfg)
 
-	fileName := cfg.FileStoragePath
-	filestorage, err := filestorage.NewFileStorage(fileName)
+	str, err := storager.NewStorager(cfg)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("pgDB.New: %v\n", err)
 	}
-	defer filestorage.Close()
+	defer str.Close()
 
-	db := storage.NewStorage()
-	h := handlers.NewHandler(cfg, db, filestorage)
-	serv := server.NewServer(h)
-	r := router.NewRouter(serv)
+	h := handlers.NewHandler(&log, cfg, str)
+	serv := server.NewServer(h, cfg.ServerAddress)
 
-	err = http.ListenAndServe(cfg.ServerAddress, r)
+	err = serv.ListenAndServe()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err)
 	}
 }

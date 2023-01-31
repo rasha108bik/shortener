@@ -10,24 +10,25 @@ import (
 type Config struct {
 	ServerAddress   string `env:"SERVER_ADDRESS" envDefault:":8080"`
 	BaseURL         string `env:"BASE_URL" envDefault:"http://localhost:8080"`
-	FileStoragePath string `env:"FILE_STORAGE_PATH" envDefault:"URLs.log"`
+	FileStoragePath string `env:"FILE_STORAGE_PATH" envDefault:""`
+	DatabaseDSN     string `env:"DATABASE_DSN" envDefault:""`
 }
 
 var (
 	serverAddress   string
 	baseURL         string
 	fileStoragePath string
+	databaseDSN     string
 )
 
-func init() {
+func NewConfig() *Config {
 	flag.StringVar(&serverAddress, "a", "", "server address")
 	flag.StringVar(&baseURL, "b", "", "base URL")
 	flag.StringVar(&fileStoragePath, "f", "", "file storage path")
-}
+	flag.StringVar(&databaseDSN, "d", "", "	databaseDSN path")
 
-func NewConfig() *Config {
 	flag.Parse()
-	log.Printf("server address: %s, base URL: %s, file storagePath: %s\n", serverAddress, baseURL, fileStoragePath)
+	log.Printf("server address: %s, base URL: %s, file storagePath: %s databaseDSN: %s\n", serverAddress, baseURL, fileStoragePath, databaseDSN)
 
 	var cfg Config
 	err := env.Parse(&cfg)
@@ -41,9 +42,9 @@ func NewConfig() *Config {
 	if baseURL != "" {
 		cfg.BaseURL = baseURL
 	}
-	if fileStoragePath != "" {
-		cfg.FileStoragePath = fileStoragePath
-	}
+
+	cfg.FileStoragePath = fileStoragePath
+	cfg.DatabaseDSN = databaseDSN
 
 	return &cfg
 }

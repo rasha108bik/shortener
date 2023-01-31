@@ -4,17 +4,22 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/rasha108bik/tiny_url/internal/middleware"
-	"github.com/rasha108bik/tiny_url/internal/server"
+	"github.com/rasha108bik/tiny_url/internal/server/handlers"
 )
 
-func NewRouter(s *server.Server) *chi.Mux {
+func NewRouter(s handlers.Handlers) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.GzipHandle)
 	r.Use(middleware.GzipRequest)
-	r.MethodNotAllowed(s.Handlers.ErrorHandler)
-	r.Get("/{id}", s.Handlers.GetOriginalURL)
-	r.Post("/api/shorten", s.Handlers.CreateShorten)
-	r.Post("/", s.Handlers.CreateShortLink)
+	r.Use(middleware.SetUserCookie)
+	r.MethodNotAllowed(s.ErrorHandler)
+	r.Get("/ping", s.Ping)
+	r.Get("/{id}", s.GetOriginalURL)
+	r.Get("/api/user/urls", s.FetchURLs)
+	r.Post("/api/shorten", s.CreateShorten)
+	r.Post("/", s.CreateShortLink)
+	r.Post("/api/shorten/batch", s.ShortenBatch)
+	r.Delete("/api/user/urls", s.DeleteURLs)
 
 	return r
 }
