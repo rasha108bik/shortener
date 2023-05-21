@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// Ping is handler which check liveness server.
 func (h *handler) Ping(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()

@@ -9,6 +9,7 @@ import (
 	"github.com/rasha108bik/tiny_url/internal/utility"
 )
 
+// DeleteURLs delete urls which include in reqBody.
 func (h *handler) DeleteURLs(w http.ResponseWriter, r *http.Request) {
 	var reqBody []string
 	err := json.NewDecoder(r.Body).Decode(&reqBody)

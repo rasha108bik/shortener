@@ -8,6 +8,7 @@ import (
 	"github.com/rasha108bik/tiny_url/internal/server/handlers"
 )
 
+// NewRouter returns a newly *chi.Muxo objects that registery pattern and middleware
 func NewRouter(s handlers.Handlers) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.GzipHandle)

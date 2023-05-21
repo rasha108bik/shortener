@@ -12,6 +12,7 @@ import (
 	"github.com/rasha108bik/tiny_url/internal/utility"
 )
 
+// CreateShortLink create short link and save in DB.
 func (h *handler) CreateShortLink(w http.ResponseWriter, r *http.Request) {
 	resBody, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -51,6 +52,7 @@ func respCreateShortLink(w http.ResponseWriter, statusCode int, baseURL string, 
 	}
 }
 
+// CreateShorten create short link and save in DB with ReqCreateShorten model.
 func (h *handler) CreateShorten(w http.ResponseWriter, r *http.Request) {
 	m := models.ReqCreateShorten{}
 	err := json.NewDecoder(r.Body).Decode(&m)

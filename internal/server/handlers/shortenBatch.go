@@ -10,6 +10,7 @@ import (
 	"github.com/rasha108bik/tiny_url/internal/utility"
 )
 
+// ShortenBatch save URLs which include ReqShortenBatch model.
 func (h *handler) ShortenBatch(w http.ResponseWriter, r *http.Request) {
 	m := []models.ReqShortenBatch{}
 	err := json.NewDecoder(r.Body).Decode(&m)

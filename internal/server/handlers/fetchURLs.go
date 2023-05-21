@@ -8,6 +8,7 @@ import (
 	"github.com/rasha108bik/tiny_url/internal/server/handlers/models"
 )
 
+// FetchURLs get all URLs from DB.
 func (h *handler) FetchURLs(w http.ResponseWriter, r *http.Request) {
 	mapURLs, _ := h.storage.GetAllURLs(r.Context())
 	if len(mapURLs) == 0 {

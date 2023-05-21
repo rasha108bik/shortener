@@ -9,6 +9,7 @@ import (
 	"github.com/jxskiss/base62"
 )
 
+// GenerateUniqKey generate unique key
 func GenerateUniqKey() string {
 	id, _ := uuid.NewRandom()
 	date := time.Now()

@@ -1,3 +1,4 @@
+// module postgres, which implement the Storager interface methods
 package postgres
 
 import (
@@ -15,10 +16,13 @@ import (
 	appErr "github.com/rasha108bik/tiny_url/internal/errors"
 )
 
+// DB struct with postgres driver *sqlx.DB.
 type DB struct {
 	db *sqlx.DB
 }
 
+// NewPostgres returns a newly initialized handler objects that implements the Storager
+// interface.
 func NewPostgres(connString string) (*DB, error) {
 	db, err := sqlx.Connect("pgx", connString)
 	if err != nil {
@@ -35,6 +39,7 @@ func NewPostgres(connString string) (*DB, error) {
 	}, nil
 }
 
+// Close closing db descriptor.
 func (db *DB) Close() error {
 	return db.db.Close()
 }
@@ -62,6 +67,7 @@ func migrateUP(db *sqlx.DB) error {
 	return nil
 }
 
+// ShortLink struct which use in postgres operations: StoreURL, GetOriginalURLByShortURL.
 type ShortLink struct {
 	ID          int    `db:"id"`
 	ShortURL    string `db:"short_url"`
@@ -71,6 +77,7 @@ type ShortLink struct {
 	UpdatedAt   string `db:"updated_at"`
 }
 
+// StoreURL save original URL and short URL in databases.
 func (db *DB) StoreURL(ctx context.Context, originalURL string, shortURL string) error {
 	_, err := db.db.NamedExecContext(ctx, `INSERT INTO short_links (short_url, original_url)
 	VALUES (:short_url, :original_url)`, &ShortLink{ShortURL: shortURL, OriginalURL: originalURL})
@@ -81,6 +88,7 @@ func (db *DB) StoreURL(ctx context.Context, originalURL string, shortURL string)
 	return nil
 }
 
+// GetOriginalURLByShortURL get original URL by short URL.
 func (db *DB) GetOriginalURLByShortURL(ctx context.Context, shortURL string) (string, error) {
 	var shortLink ShortLink
 	err := db.db.GetContext(ctx, &shortLink, "SELECT * FROM short_links WHERE short_url=$1", shortURL)
@@ -95,6 +103,7 @@ func (db *DB) GetOriginalURLByShortURL(ctx context.Context, shortURL string) (st
 	return shortLink.OriginalURL, nil
 }
 
+// GetAllURLs get all URLs from databases.
 func (db *DB) GetAllURLs(ctx context.Context) (map[string]string, error) {
 	var shortLink []ShortLink
 	err := db.db.SelectContext(ctx, &shortLink, "SELECT * FROM short_links")
@@ -110,6 +119,7 @@ func (db *DB) GetAllURLs(ctx context.Context) (map[string]string, error) {
 	return res, nil
 }
 
+// GetShortURLByOriginalURL get URL by original URL
 func (db *DB) GetShortURLByOriginalURL(ctx context.Context, originalURL string) (string, error) {
 	var shortLink ShortLink
 	err := db.db.GetContext(ctx, &shortLink, "SELECT * FROM short_links WHERE original_url=$1", originalURL)
@@ -123,6 +133,7 @@ func (db *DB) GetShortURLByOriginalURL(ctx context.Context, originalURL string) 
 	return shortLink.ShortURL, appErr.ErrOriginalURLExist
 }
 
+// Ping check connect with databases.
 func (db *DB) Ping(ctx context.Context) error {
 	err := db.db.PingContext(ctx)
 	if err != nil {
@@ -132,6 +143,7 @@ func (db *DB) Ping(ctx context.Context) error {
 	return nil
 }
 
+// DeleteURLByShortURL delete long URL by short URL.
 func (db *DB) DeleteURLByShortURL(ctx context.Context, shortURLs string) error {
 	_, err := db.db.ExecContext(ctx, `UPDATE short_links SET deleted=TRUE WHERE short_url=$1`, shortURLs)
 	if err != nil {

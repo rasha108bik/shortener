@@ -7,6 +7,7 @@ import (
 	"github.com/rasha108bik/tiny_url/internal/server/handlers"
 )
 
+// NewServer returns a newly initialized http.Server objects
 func NewServer(
 	h handlers.Handlers,
 	serverAddress string,
