@@ -8,6 +8,7 @@ import (
 	appErr "github.com/rasha108bik/tiny_url/internal/errors"
 )
 
+// GetOriginalURL get URL which include in url param
 func (h *handler) GetOriginalURL(w http.ResponseWriter, r *http.Request) {
 	shortURL := chi.URLParam(r, "id")
 	if shortURL == "" {
