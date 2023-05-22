@@ -7,6 +7,8 @@ import (
 	"github.com/caarlos0/env/v6"
 )
 
+// Config include all parametrs for run server
+// SERVER_ADDRESS, BASE_URL, FILE_STORAGE_PATH, DATABASE_DSN
 type Config struct {
 	ServerAddress   string `env:"SERVER_ADDRESS" envDefault:":8080"`
 	BaseURL         string `env:"BASE_URL" envDefault:"http://localhost:8080"`
@@ -21,6 +23,7 @@ var (
 	databaseDSN     string
 )
 
+// NewConfig returns a newly initialized Config objects
 func NewConfig() *Config {
 	flag.StringVar(&serverAddress, "a", "", "server address")
 	flag.StringVar(&baseURL, "b", "", "base URL")

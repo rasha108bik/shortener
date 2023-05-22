@@ -1,3 +1,5 @@
+// error package contains response errors with a description
+
 package errors
 
 import "errors"
