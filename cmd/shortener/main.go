@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/rs/zerolog"
@@ -11,7 +12,16 @@ import (
 	"github.com/rasha108bik/tiny_url/internal/storager"
 )
 
+var (
+	buildVersion = "N/A"
+	buildDate    = "N/A"
+	buildCommit  = "N/A"
+)
+
 func main() {
+	fmt.Printf("Build version: %s\nBuild date: %s\nBuild commit: %s\n",
+		buildVersion, buildDate, buildCommit)
+
 	log := zerolog.New(os.Stdout).Level(zerolog.DebugLevel)
 
 	cfg := config.NewConfig()
