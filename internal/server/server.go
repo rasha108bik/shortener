@@ -15,7 +15,7 @@ type Server struct {
 }
 
 // NewServer returns a newly initialized http.Server objects
-func (s Server) NewServer(
+func (s *Server) NewServer(
 	h handlers.Handlers,
 	serverAddress,
 	enableHTTPS string,
@@ -24,10 +24,10 @@ func (s Server) NewServer(
 	r := router.NewRouter(h)
 	s.buildHTTPServer(r, serverAddress)
 
-	return &s
+	return s
 }
 
-func (s Server) buildHTTPServer(
+func (s *Server) buildHTTPServer(
 	r *chi.Mux,
 	serverAddress string,
 ) *Server {
@@ -50,10 +50,10 @@ func (s Server) buildHTTPServer(
 	} else {
 		s.serv = http.Server{Addr: serverAddress, Handler: r}
 	}
-	return &s
+	return s
 }
 
-func (s Server) Start() error {
+func (s *Server) Start() error {
 	var err error
 
 	if s.enableHTTPS != "" {
