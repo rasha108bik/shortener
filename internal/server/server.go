@@ -10,7 +10,7 @@ import (
 )
 
 type Server struct {
-	serv        http.Server
+	serv        *http.Server
 	enableHTTPS string
 }
 
@@ -41,14 +41,14 @@ func (s Server) buildHTTPServer(
 			HostPolicy: autocert.HostWhitelist("mysite.ru", "www.mysite.ru"),
 		}
 		// конструируем сервер с поддержкой TLS
-		s.serv = http.Server{
+		s.serv = &http.Server{
 			Addr:    ":443",
 			Handler: r,
 			// для TLS-конфигурации используем менеджер сертификатов
 			TLSConfig: manager.TLSConfig(),
 		}
 	}
-	s.serv = http.Server{Addr: serverAddress, Handler: r}
+	s.serv = &http.Server{Addr: serverAddress, Handler: r}
 	return &s
 }
 
