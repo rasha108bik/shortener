@@ -9,29 +9,30 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 )
 
-type Server struct {
+type server struct {
 	serv        http.Server
 	enableHTTPS string
 }
 
 // NewServer returns a newly initialized http.Server objects
-func (s *Server) NewServer(
+func NewServer(
 	h handlers.Handlers,
 	serverAddress,
 	enableHTTPS string,
-) *Server {
-	s.enableHTTPS = enableHTTPS
+) *server {
 	r := router.NewRouter(h)
-	s.buildHTTPServer(r, serverAddress)
-
-	return s
+	return &server{
+		serv:        buildHTTPServer(r, serverAddress, enableHTTPS),
+		enableHTTPS: enableHTTPS,
+	}
 }
 
-func (s *Server) buildHTTPServer(
+func buildHTTPServer(
 	r *chi.Mux,
-	serverAddress string,
-) *Server {
-	if s.enableHTTPS != "" {
+	serverAddress,
+	enableHTTPS string,
+) http.Server {
+	if enableHTTPS != "" {
 		manager := &autocert.Manager{
 			// директория для хранения сертификатов
 			Cache: autocert.DirCache("cache-dir"),
@@ -41,19 +42,18 @@ func (s *Server) buildHTTPServer(
 			HostPolicy: autocert.HostWhitelist("mysite.ru", "www.mysite.ru"),
 		}
 		// конструируем сервер с поддержкой TLS
-		s.serv = http.Server{
+		return http.Server{
 			Addr:    ":443",
 			Handler: r,
 			// для TLS-конфигурации используем менеджер сертификатов
 			TLSConfig: manager.TLSConfig(),
 		}
-	} else {
-		s.serv = http.Server{Addr: serverAddress, Handler: r}
 	}
-	return s
+
+	return http.Server{Addr: serverAddress, Handler: r}
 }
 
-func (s *Server) Start() error {
+func (s *server) Start() error {
 	var err error
 
 	if s.enableHTTPS != "" {

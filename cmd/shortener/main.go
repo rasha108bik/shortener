@@ -36,8 +36,7 @@ func main() {
 
 	h := handlers.NewHandler(&log, cfg, str)
 
-	s := server.Server{}
-	err = s.NewServer(h, cfg.ServerAddress, cfg.EnableHTTPS).Start()
+	err = server.NewServer(h, cfg.ServerAddress, cfg.EnableHTTPS).Start()
 	if err != nil {
 		log.Fatal().Err(err)
 	}
