@@ -22,12 +22,12 @@ func (s Server) NewServer(
 ) *Server {
 	s.enableHTTPS = enableHTTPS
 	r := router.NewRouter(h)
-	s.buildHttpServer(r, serverAddress)
+	s.buildHTTPServer(r, serverAddress)
 
 	return &s
 }
 
-func (s Server) buildHttpServer(
+func (s Server) buildHTTPServer(
 	r *chi.Mux,
 	serverAddress string,
 ) *Server {
