@@ -3,7 +3,7 @@ package server
 import (
 	"net/http"
 
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 	"github.com/rasha108bik/tiny_url/internal/router"
 	"github.com/rasha108bik/tiny_url/internal/server/handlers"
 	"golang.org/x/crypto/acme/autocert"
