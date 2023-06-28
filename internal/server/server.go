@@ -53,6 +53,7 @@ func buildHTTPServer(
 	return http.Server{Addr: serverAddress, Handler: r}
 }
 
+// Start is running server
 func (s *server) Start() error {
 	var err error
 
