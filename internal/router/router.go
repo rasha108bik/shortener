@@ -2,6 +2,7 @@ package router
 
 import (
 	"github.com/go-chi/chi/v5"
+	middlewareChi "github.com/go-chi/chi/v5/middleware"
 
 	"github.com/rasha108bik/tiny_url/internal/middleware"
 	"github.com/rasha108bik/tiny_url/internal/server/handlers"
@@ -12,6 +13,8 @@ func NewRouter(s handlers.Handlers) *chi.Mux {
 	r.Use(middleware.GzipHandle)
 	r.Use(middleware.GzipRequest)
 	r.Use(middleware.SetUserCookie)
+	r.Mount("/debug", middlewareChi.Profiler())
+
 	r.MethodNotAllowed(s.ErrorHandler)
 	r.Get("/ping", s.Ping)
 	r.Get("/{id}", s.GetOriginalURL)
