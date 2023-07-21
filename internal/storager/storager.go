@@ -11,6 +11,8 @@ import (
 )
 
 //go:generate bin/mockgen -source=postgres.go -package=$GOPACKAGE -destination=postgres_interface_mock.go
+
+// Storager interface for storage object.
 type Storager interface {
 	StoreURL(ctx context.Context, originalURL string, shortURL string) error
 	GetOriginalURLByShortURL(ctx context.Context, shortURL string) (string, error)
@@ -21,14 +23,18 @@ type Storager interface {
 	Close() error
 }
 
+// StorageType type storage.
 type StorageType int
 
+// Generic storager type.
 const (
 	InMemoryStorage StorageType = 1 << iota
 	FileStorage
 	PsgStorage
 )
 
+// NewStorager  returns a newly initialized Storager objects that implements the Storager
+// interface.
 func NewStorager(cfg *config.Config) (Storager, error) {
 	switch getStoragerType(*cfg) {
 	case PsgStorage:

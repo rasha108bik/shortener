@@ -26,3 +26,9 @@ unit-test: ## unit-test
 .PHONY: go-generate-all
 go-generate-all: ## go-generate-all
 	PATH=$(LOCAL_BIN):$(PATH) go generate ./...
+
+# if ypu want to open docs for api, you need to open: http://localhost:8080/pkg/?m=all 
+.PHONY: godoc-play 
+godoc-play: ## godoc play
+	godoc -play -http=:8080
+

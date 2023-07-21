@@ -2,6 +2,7 @@ package utility
 
 import "sync"
 
+// FanOut pattern which use with channel
 func FanOut(inputCh chan string, n int) []chan string {
 	chs := make([]chan string, 0, n)
 	for i := 0; i < n; i++ {
@@ -34,6 +35,7 @@ func FanOut(inputCh chan string, n int) []chan string {
 	return chs
 }
 
+// FanIn pattern which use with channel
 func FanIn(inputChs ...chan string) chan string {
 	outCh := make(chan string)
 

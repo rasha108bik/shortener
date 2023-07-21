@@ -1,3 +1,4 @@
+// module file, which implement the Storager interface methods
 package storage
 
 import (
@@ -10,15 +11,21 @@ import (
 	appErr "github.com/rasha108bik/tiny_url/internal/errors"
 )
 
-type Event struct {
-	ShortURL    string `json:"short_url"`
-	OriginalURL string `json:"original_url"`
-}
+// models for filestorage
+type (
+	// Event model for save in file the fiels: short_url, original_url
+	Event struct {
+		ShortURL    string `json:"short_url"`
+		OriginalURL string `json:"original_url"`
+	}
 
-type fileStorage struct {
-	file *os.File
-}
+	fileStorage struct {
+		file *os.File
+	}
+)
 
+// NewFileStorage returns a newly initialized fileStorage objects that implements the Storager
+// interface.
 func NewFileStorage(filename string) (*fileStorage, error) {
 	file, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE, 0777)
 	if err != nil {
@@ -29,6 +36,7 @@ func NewFileStorage(filename string) (*fileStorage, error) {
 	}, nil
 }
 
+// StoreURL save original URL and short URL in file.
 func (f *fileStorage) StoreURL(ctx context.Context, originalURL string, shortURL string) error {
 	data, err := json.Marshal(
 		&Event{
@@ -58,6 +66,7 @@ func (f *fileStorage) StoreURL(ctx context.Context, originalURL string, shortURL
 	return nil
 }
 
+// GetOriginalURLByShortURL get original URL by short URL.
 func (f *fileStorage) GetOriginalURLByShortURL(ctx context.Context, shortURL string) (string, error) {
 	f.file.Seek(0, io.SeekStart)
 
@@ -78,6 +87,7 @@ func (f *fileStorage) GetOriginalURLByShortURL(ctx context.Context, shortURL str
 	return "", appErr.ErrNoSuchID
 }
 
+// GetAllURLs get all URLs from file.
 func (f *fileStorage) GetAllURLs(ctx context.Context) (map[string]string, error) {
 	f.file.Seek(0, io.SeekStart)
 
@@ -97,6 +107,7 @@ func (f *fileStorage) GetAllURLs(ctx context.Context) (map[string]string, error)
 	return res, nil
 }
 
+// GetShortURLByOriginalURL get URL by original URL
 func (f *fileStorage) GetShortURLByOriginalURL(ctx context.Context, originalURL string) (string, error) {
 	f.file.Seek(0, io.SeekStart)
 
@@ -117,14 +128,17 @@ func (f *fileStorage) GetShortURLByOriginalURL(ctx context.Context, originalURL 
 	return "", appErr.ErrNoSuchID
 }
 
+// Close closing file descriptor.
 func (f *fileStorage) Close() error {
 	return f.file.Close()
 }
 
+// Ping not implement.
 func (f *fileStorage) Ping(ctx context.Context) error {
 	return nil
 }
 
+// DeleteURLByShortURL not implement.
 func (f *fileStorage) DeleteURLByShortURL(ctx context.Context, shortlURL string) error {
 	return nil
 }

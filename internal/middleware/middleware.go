@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+// GzipRequest if Content-Encoding set to gzip, than convert body gzip.NewReader
 func GzipRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
@@ -34,10 +35,12 @@ type gzipWriter struct {
 	Writer io.Writer
 }
 
+// Write byte
 func (w gzipWriter) Write(b []byte) (int, error) {
 	return w.Writer.Write(b)
 }
 
+// GzipHandle set Content-Encoding: gzip for Accept-Encoding: gzip
 func GzipHandle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
@@ -61,6 +64,7 @@ func GzipHandle(next http.Handler) http.Handler {
 
 const authorization = "Authorization"
 
+// SetUserCookie set cookie for post method and check setted cookie for req: '/api/user/urls'
 func SetUserCookie(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if (r.RequestURI == "/") || (r.Method == http.MethodPost) {
