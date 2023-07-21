@@ -3,11 +3,12 @@ package main
 import (
 	"os"
 
+	"github.com/rs/zerolog"
+
 	"github.com/rasha108bik/tiny_url/config"
 	"github.com/rasha108bik/tiny_url/internal/server"
 	"github.com/rasha108bik/tiny_url/internal/server/handlers"
 	"github.com/rasha108bik/tiny_url/internal/storager"
-	"github.com/rs/zerolog"
 )
 
 func main() {

@@ -32,3 +32,6 @@ go-generate-all: ## go-generate-all
 godoc-play: ## godoc play
 	godoc -play -http=:8080
 
+.PHONY: statichcheck 
+statichcheck: ## statichcheck
+	go run $(PWD)/cmd/staticlint/main.go

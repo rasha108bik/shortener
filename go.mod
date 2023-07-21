@@ -13,9 +13,12 @@ require (
 	github.com/jxskiss/base62 v1.1.0
 	github.com/rs/zerolog v1.15.0
 	github.com/stretchr/testify v1.8.1
+	golang.org/x/tools v0.1.12
+	honnef.co/go/tools v0.0.1-2020.1.4
 )
 
 require (
+	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
@@ -26,6 +29,8 @@ require (
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90 // indirect
+	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
+	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
 	golang.org/x/text v0.3.8 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
