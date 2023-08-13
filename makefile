@@ -10,7 +10,7 @@ help: ## help
 
 .PHONY: app-run
 app-run: ## run app
-	go run $(PWD)/cmd/shortener/main.go
+	go run -ldflags "-X main.buildVersion=v1.0.0 -X 'main.buildDate=$(shell date)'" $(PWD)/cmd/shortener/main.go
 
 .PHONY: unit-test 
 unit-test: ## unit-test 
