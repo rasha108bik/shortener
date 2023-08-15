@@ -35,3 +35,7 @@ godoc-play: ## godoc play
 .PHONY: statichcheck 
 statichcheck: ## statichcheck
 	go run $(PWD)/cmd/staticlint/main.go
+
+.PHONY: install-githooks
+install-githooks:
+	cp ./githooks/* .git/hooks

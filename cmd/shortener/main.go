@@ -35,9 +35,8 @@ func main() {
 	defer str.Close()
 
 	h := handlers.NewHandler(&log, cfg, str)
-	serv := server.NewServer(h, cfg.ServerAddress)
 
-	err = serv.ListenAndServe()
+	err = server.NewServer(h, cfg.ServerAddress, cfg.EnableHTTPS).Start()
 	if err != nil {
 		log.Fatal().Err(err)
 	}
