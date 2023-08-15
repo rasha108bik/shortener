@@ -152,7 +152,7 @@ func TestHandlers(t *testing.T) {
 	t.Run("get short urls and users", func(t *testing.T) {
 		request := httptest.NewRequest(http.MethodGet, "/api/internal/stats", nil)
 		w := httptest.NewRecorder()
-		h := http.HandlerFunc(handler.GetOriginalURL)
+		h := http.HandlerFunc(handler.Stats)
 		h(w, request)
 		result := w.Result()
 
