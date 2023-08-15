@@ -142,3 +142,13 @@ func (f *fileStorage) Ping(ctx context.Context) error {
 func (f *fileStorage) DeleteURLByShortURL(ctx context.Context, shortlURL string) error {
 	return nil
 }
+
+// GetCountShortURLAndUsers get count short URLs.
+func (f *fileStorage) GetCountShortURLAndUsers(ctx context.Context) (int, error) {
+	urls, err := f.GetAllURLs(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	return len(urls), nil
+}
