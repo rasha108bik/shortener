@@ -20,6 +20,8 @@ type Config struct {
 	EnableHTTPS     string `env:"ENABLE_HTTPS" envDefault:"" json:"enable_https"`
 
 	FileName string `env:"CONFIG" envDefault:""`
+
+	TrustedSubnet string `env:"TRUSTED_SUBNET"`
 }
 
 var (
@@ -30,6 +32,8 @@ var (
 	listenAndServeTLS string
 
 	fileName string
+
+	trustedSubnet string
 )
 
 // NewConfig returns a newly initialized Config objects.
@@ -42,6 +46,7 @@ func NewConfig() *Config {
 
 	flag.StringVar(&fileName, "c", "", "config file name")
 	flag.StringVar(&fileName, "config", "", "config file name")
+	flag.StringVar(&trustedSubnet, "t", "", "CIDR")
 
 	flag.Parse()
 	log.Printf("server address: %s, base URL: %s, file storagePath: %s databaseDSN: %s\n", serverAddress, baseURL, fileStoragePath, databaseDSN)
