@@ -2,11 +2,17 @@ LOCAL_BIN=$(CURDIR)/bin
 
 include bin-deps.mk
 
+TIMEOUT = 30s
+
 default: help
 
 .PHONY: help
 help: ## help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+.PHONY: tools
+tools: ## instal binary
+	cd tools && go mod tidy && go generate -tags tools
 
 .PHONY: app-run
 app-run: ## run app
@@ -14,7 +20,7 @@ app-run: ## run app
 
 .PHONY: unit-test 
 unit-test: ## unit-test 
-	go test -count=1 -v ./...
+	go test -cover -race -timeout $(TIMEOUT) ./... | column -t | sort -r
 
 # .PHONY: mockgen-install
 # mockgen-install: ## mockgen-install
