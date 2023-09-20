@@ -8,8 +8,12 @@ import (
 	"github.com/rasha108bik/tiny_url/internal/server/handlers"
 )
 
-// NewRouter returns a newly *chi.Muxo objects that registery pattern and middleware
-func NewRouter(s handlers.Handlers) *chi.Mux {
+type HTTPRoute struct {
+	Route *chi.Mux
+}
+
+// NewRouter returns a newly *RouterFacade objects that registery pattern and middleware
+func newHTTPRoute(s handlers.Handlers) HTTPRoute {
 	r := chi.NewRouter()
 	r.Use(middleware.GzipHandle)
 	r.Use(middleware.GzipRequest)
@@ -26,5 +30,7 @@ func NewRouter(s handlers.Handlers) *chi.Mux {
 	r.Post("/api/shorten/batch", s.ShortenBatch)
 	r.Delete("/api/user/urls", s.DeleteURLs)
 
-	return r
+	return HTTPRoute{
+		Route: r,
+	}
 }

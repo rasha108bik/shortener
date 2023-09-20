@@ -8,9 +8,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/rasha108bik/tiny_url/internal/router"
-	"github.com/rasha108bik/tiny_url/internal/server/handlers"
 	"github.com/rs/zerolog"
 	"golang.org/x/crypto/acme/autocert"
 )
@@ -22,19 +19,20 @@ type server struct {
 
 // NewServer returns a newly initialized http.Server objects
 func NewServer(
-	h handlers.Handlers,
+	_ context.Context,
+	httpRoute httpRoute,
+	grpcRoute grpcRoute,
 	serverAddress,
 	enableHTTPS string,
 ) *server {
-	r := router.NewRouter(h)
 	return &server{
-		serv:        buildHTTPServer(r, serverAddress, enableHTTPS),
+		serv:        buildHTTPServer(httpRoute, serverAddress, enableHTTPS),
 		enableHTTPS: enableHTTPS,
 	}
 }
 
 func buildHTTPServer(
-	r *chi.Mux,
+	r httpRoute,
 	serverAddress,
 	enableHTTPS string,
 ) http.Server {

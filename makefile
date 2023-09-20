@@ -1,10 +1,9 @@
+default: help
+
 LOCAL_BIN=$(CURDIR)/bin
-
-include bin-deps.mk
-
 TIMEOUT = 30s
 
-default: help
+include bin-deps.mk
 
 .PHONY: help
 help: ## help
