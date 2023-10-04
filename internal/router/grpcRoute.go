@@ -1,6 +1,8 @@
 package router
 
-import "github.com/rasha108bik/tiny_url/internal/server/handlers"
+import (
+	"github.com/rasha108bik/tiny_url/internal/server/handlers"
+)
 
 type GRPCRoute struct {
 }

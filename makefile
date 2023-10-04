@@ -44,3 +44,7 @@ statichcheck: ## statichcheck
 .PHONY: install-githooks
 install-githooks:
 	cp ./githooks/* .git/hooks
+
+.PHONY: generate-protoc
+generate-protoc:
+	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative tinyurl.proto

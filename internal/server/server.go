@@ -3,13 +3,16 @@ package server
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
+	generated "github.com/rasha108bik/tiny_url/api/tinyurl"
 	"github.com/rs/zerolog"
 	"golang.org/x/crypto/acme/autocert"
+	"google.golang.org/grpc"
 )
 
 type server struct {
@@ -90,9 +93,30 @@ func (s *server) Start(
 		}
 	}
 
+	// grpc server run
+	{
+		lis, err := net.Listen("tcp", s.serv.Addr)
+		if err != nil {
+			return err
+		}
+
+		grpcServer := buildGRPCServer()
+		if err = grpcServer.Serve(lis); err != nil {
+			return err
+		}
+	}
+
 	// wait for the graceful shutdown procedure to complete
 	<-idleConnsClosed
 	fmt.Println("Server Shutdown gracefully")
 
 	return nil
+}
+
+func buildGRPCServer() *grpc.Server {
+	grpcServ := generated.UnimplementedApiServiceServer{}
+	baseGrpcServer := grpc.NewServer()
+	generated.RegisterApiServiceServer(baseGrpcServer, &grpcServ)
+
+	return baseGrpcServer
 }
