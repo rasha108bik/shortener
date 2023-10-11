@@ -9,7 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	generated "github.com/rasha108bik/tiny_url/api/tinyurl"
+	"github.com/rasha108bik/tiny_url/api/tinyurl/generated"
 	"github.com/rs/zerolog"
 	"golang.org/x/crypto/acme/autocert"
 	"google.golang.org/grpc"
@@ -87,22 +87,23 @@ func (s *server) Start(
 			return err
 		}
 	} else {
-		err = s.serv.ListenAndServe()
-		if err != nil {
-			return err
-		}
-	}
-
-	// grpc server run
-	{
 		lis, err := net.Listen("tcp", s.serv.Addr)
 		if err != nil {
+			log.Error().Err(err).Msg("listen tcp for grpc failed")
 			return err
 		}
 
-		grpcServer := buildGRPCServer()
-		if err = grpcServer.Serve(lis); err != nil {
-			return err
+		go func() {
+			// grpc server run
+			grpcServer := buildGRPCServer()
+			if err = grpcServer.Serve(lis); err != nil {
+				log.Error().Err(err).Msg("grpcServer.Serve failed")
+			}
+		}()
+
+		err = s.serv.Serve(lis)
+		if err != nil {
+			log.Error().Err(err).Msg("s.serv.Serve failed")
 		}
 	}
 
