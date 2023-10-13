@@ -8,11 +8,12 @@ import (
 	"github.com/rasha108bik/tiny_url/internal/server/handlers"
 )
 
+// HTTPRoute struct for return constructor.
 type HTTPRoute struct {
 	Route *chi.Mux
 }
 
-// NewRouter returns a newly *RouterFacade objects that registery pattern and middleware
+// newHTTPRoute returns a newly *HTTPRoute objects that registery pattern and middleware.
 func newHTTPRoute(s handlers.Handlers) HTTPRoute {
 	r := chi.NewRouter()
 	r.Use(middleware.GzipHandle)

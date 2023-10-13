@@ -8,7 +8,7 @@ import (
 type GRPCRoute struct {
 }
 
-// NewRouter returns a newly *RouterFacade objects that registery pattern and middleware.
+// newGRPCRoute returns a newly GRPCRoute objects that registery pattern and middleware.
 func newGRPCRoute(s handlers.Handlers) GRPCRoute {
 	return GRPCRoute{}
 }
