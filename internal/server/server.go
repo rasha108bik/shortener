@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -87,24 +86,16 @@ func (s *server) Start(
 			return err
 		}
 	} else {
-		lis, err := net.Listen("tcp", s.serv.Addr)
+		err = s.serv.ListenAndServe()
 		if err != nil {
-			log.Error().Err(err).Msg("listen tcp for grpc failed")
 			return err
 		}
 
-		go func() {
-			// grpc server run
-			grpcServer := buildGRPCServer()
-			if err = grpcServer.Serve(lis); err != nil {
-				log.Error().Err(err).Msg("grpcServer.Serve failed")
-			}
-		}()
-
-		err = s.serv.Serve(lis)
-		if err != nil {
-			log.Error().Err(err).Msg("s.serv.Serve failed")
-		}
+		// grpc server run
+		// grpcServer := buildGRPCServer()
+		// if err = grpcServer.Serve(lis); err != nil {
+		// 	log.Error().Err(err).Msg("grpcServer.Serve failed")
+		// }
 	}
 
 	// wait for the graceful shutdown procedure to complete
