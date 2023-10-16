@@ -1,11 +1,17 @@
 package server
 
 import (
+	"context"
+	"fmt"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/rasha108bik/tiny_url/internal/router"
 	"github.com/rasha108bik/tiny_url/internal/server/handlers"
+	"github.com/rs/zerolog"
 	"golang.org/x/crypto/acme/autocert"
 )
 
@@ -54,8 +60,25 @@ func buildHTTPServer(
 }
 
 // Start is running server
-func (s *server) Start() error {
+func (s *server) Start(
+	log *zerolog.Logger,
+) error {
 	var err error
+
+	idleConnsClosed := make(chan struct{})
+	sigs := make(chan os.Signal, 3)
+
+	signal.Notify(sigs, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
+
+	go func() {
+		// read from interrupt channel
+		<-sigs
+		// recieved the os.interrupt signal, start the graceful shutdown procedure
+		if err := s.serv.Shutdown(context.Background()); err != nil {
+			log.Printf("HTTP server Shutdown: %v", err)
+		}
+		close(idleConnsClosed)
+	}()
 
 	if s.enableHTTPS != "" {
 		err = s.serv.ListenAndServeTLS("", "")
@@ -68,6 +91,10 @@ func (s *server) Start() error {
 			return err
 		}
 	}
+
+	// wait for the graceful shutdown procedure to complete
+	<-idleConnsClosed
+	fmt.Println("Server Shutdown gracefully")
 
 	return nil
 }
