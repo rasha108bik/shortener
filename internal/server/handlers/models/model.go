@@ -30,8 +30,8 @@ type (
 		ShortURL      string `json:"short_url"`
 	}
 
-	// RespStats model for response Stats request.
-	RespStats struct {
+	// ResponseStats model for response Stats request.
+	ResponseStats struct {
 		URLs  int `json:"urls"`  // количество сокращённых URL в сервисе
 		Users int `json:"users"` // количество пользователей в сервисе
 	}

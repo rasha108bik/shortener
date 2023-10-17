@@ -21,7 +21,11 @@ func (h *handler) Stats(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	mapData := mapperGetShortlURLsAndUsers(cntShortURLs)
+	mapData := models.ResponseStats{
+		URLs:  cntShortURLs,
+		Users: cntShortURLs,
+	}
+
 	res, err := json.Marshal(mapData)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -34,14 +38,5 @@ func (h *handler) Stats(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
-	}
-}
-
-func mapperGetShortlURLsAndUsers(cntShortURLs int) models.RespStats {
-	users := cntShortURLs
-
-	return models.RespStats{
-		URLs:  cntShortURLs,
-		Users: users,
 	}
 }
