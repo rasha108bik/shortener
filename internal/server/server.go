@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 	"net"
 	"net/http"
@@ -82,19 +81,23 @@ func (s *server) Start(
 		close(idleConnsClosed)
 	}()
 
-	lis, err := netListenerRun(log, s.enableHTTPS, s.serv.Addr)
-	if err != nil {
-		return err
-	}
-
 	// grpc server run
 	grpcServer := buildGRPCServer()
-	log.Info().Msg("grpcServer.Serve failed")
 	go func() {
+		lis, err := net.Listen("tcp", ":8084")
+		if err != nil {
+			log.Error().Err(err).Msg("GRPC listen server failed")
+		}
+
 		if err = grpcServer.Serve(lis); err != nil {
 			log.Error().Err(err).Msg("grpcServer server failed")
 		}
 	}()
+
+	err = netListenerRun(log, s.enableHTTPS, s.serv.Addr, &s.serv)
+	if err != nil {
+		return err
+	}
 
 	// wait for the graceful shutdown procedure to complete
 	<-idleConnsClosed
@@ -103,34 +106,20 @@ func (s *server) Start(
 	return nil
 }
 
-func netListenerRun(log *zerolog.Logger, enableHTTPS, addr string) (net.Listener, error) {
+func netListenerRun(log *zerolog.Logger, enableHTTPS, addr string, serv *http.Server) error {
 	if enableHTTPS != "" {
-		lis, err := tls.Listen("tcp", addr, nil)
+		err := serv.ListenAndServeTLS("", "")
 		if err != nil {
-			log.Fatal().Err(err).Msg("failed to listen")
-			return nil, err
+			return err
 		}
-
-		return lis, nil
-
-		// err = s.serv.ListenAndServeTLS("", "")
-		// if err != nil {
-		// 	return err
-		// }
 	}
 
-	lis, err := net.Listen("tcp", addr)
+	err := serv.ListenAndServe()
 	if err != nil {
-		log.Fatal().Err(err).Msg("failed to listen")
-		return nil, err
+		return err
 	}
 
-	return lis, nil
-
-	// err = s.serv.ListenAndServe()
-	// if err != nil {
-	// 	return err
-	// }
+	return nil
 }
 
 func buildGRPCServer() *grpc.Server {
