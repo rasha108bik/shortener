@@ -24,11 +24,12 @@ type server struct {
 func NewServer(
 	h handlers.Handlers,
 	serverAddress,
-	enableHTTPS string,
+	enableHTTPS,
+	hostWhitelist string,
 ) *server {
 	r := router.NewRouter(h)
 	return &server{
-		serv:        buildHTTPServer(r, serverAddress, enableHTTPS),
+		serv:        buildHTTPServer(r, serverAddress, enableHTTPS, hostWhitelist),
 		enableHTTPS: enableHTTPS,
 	}
 }
@@ -36,7 +37,8 @@ func NewServer(
 func buildHTTPServer(
 	r *chi.Mux,
 	serverAddress,
-	enableHTTPS string,
+	enableHTTPS,
+	hostWhitelist string,
 ) http.Server {
 	if enableHTTPS != "" {
 		manager := &autocert.Manager{
@@ -45,7 +47,7 @@ func buildHTTPServer(
 			// функция, принимающая Terms of Service издателя сертификатов
 			Prompt: autocert.AcceptTOS,
 			// перечень доменов, для которых будут поддерживаться сертификаты
-			HostPolicy: autocert.HostWhitelist("mysite.ru", "www.mysite.ru"),
+			HostPolicy: autocert.HostWhitelist(hostWhitelist),
 		}
 		// конструируем сервер с поддержкой TLS
 		return http.Server{
