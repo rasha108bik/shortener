@@ -16,6 +16,7 @@ type Handlers interface {
 	CreateShortLink(w http.ResponseWriter, r *http.Request)
 	CreateShorten(w http.ResponseWriter, r *http.Request)
 	GetOriginalURL(w http.ResponseWriter, r *http.Request)
+	Stats(w http.ResponseWriter, r *http.Request)
 	FetchURLs(w http.ResponseWriter, r *http.Request)
 	Ping(w http.ResponseWriter, r *http.Request)
 	ShortenBatch(w http.ResponseWriter, r *http.Request)

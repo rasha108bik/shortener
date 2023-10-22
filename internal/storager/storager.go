@@ -18,6 +18,7 @@ type Storager interface {
 	GetOriginalURLByShortURL(ctx context.Context, shortURL string) (string, error)
 	GetAllURLs(ctx context.Context) (map[string]string, error)
 	GetShortURLByOriginalURL(ctx context.Context, originalURL string) (string, error)
+	GetCountShortURLAndUsers(ctx context.Context) (int, error)
 	DeleteURLByShortURL(ctx context.Context, shortlURLs string) error
 	Ping(ctx context.Context) error
 	Close() error

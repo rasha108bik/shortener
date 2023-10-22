@@ -3,16 +3,16 @@ package server
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/rasha108bik/tiny_url/internal/router"
-	"github.com/rasha108bik/tiny_url/internal/server/handlers"
+	"github.com/rasha108bik/tiny_url/api/tinyurl/generated"
 	"github.com/rs/zerolog"
 	"golang.org/x/crypto/acme/autocert"
+	"google.golang.org/grpc"
 )
 
 type server struct {
@@ -22,19 +22,19 @@ type server struct {
 
 // NewServer returns a newly initialized http.Server objects
 func NewServer(
-	h handlers.Handlers,
+	httpRoute httpRoute,
+	grpcRoute grpcRoute,
 	serverAddress,
 	enableHTTPS string,
 ) *server {
-	r := router.NewRouter(h)
 	return &server{
-		serv:        buildHTTPServer(r, serverAddress, enableHTTPS),
+		serv:        buildHTTPServer(httpRoute, serverAddress, enableHTTPS),
 		enableHTTPS: enableHTTPS,
 	}
 }
 
 func buildHTTPServer(
-	r *chi.Mux,
+	r httpRoute,
 	serverAddress,
 	enableHTTPS string,
 ) http.Server {
@@ -80,16 +80,22 @@ func (s *server) Start(
 		close(idleConnsClosed)
 	}()
 
-	if s.enableHTTPS != "" {
-		err = s.serv.ListenAndServeTLS("", "")
+	// grpc server run
+	grpcServer := buildGRPCServer()
+	go func() {
+		lis, err := net.Listen("tcp", ":8084")
 		if err != nil {
-			return err
+			log.Error().Err(err).Msg("GRPC listen server failed")
 		}
-	} else {
-		err = s.serv.ListenAndServe()
-		if err != nil {
-			return err
+
+		if err = grpcServer.Serve(lis); err != nil {
+			log.Error().Err(err).Msg("grpcServer server failed")
 		}
+	}()
+
+	err = netListenerRun(log, s.enableHTTPS, s.serv.Addr, &s.serv)
+	if err != nil {
+		return err
 	}
 
 	// wait for the graceful shutdown procedure to complete
@@ -97,4 +103,28 @@ func (s *server) Start(
 	fmt.Println("Server Shutdown gracefully")
 
 	return nil
+}
+
+func netListenerRun(log *zerolog.Logger, enableHTTPS, addr string, serv *http.Server) error {
+	if enableHTTPS != "" {
+		err := serv.ListenAndServeTLS("", "")
+		if err != nil {
+			return err
+		}
+	}
+
+	err := serv.ListenAndServe()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func buildGRPCServer() *grpc.Server {
+	grpcServ := generated.UnimplementedApiServiceServer{}
+	baseGrpcServer := grpc.NewServer()
+	generated.RegisterApiServiceServer(baseGrpcServer, &grpcServ)
+
+	return baseGrpcServer
 }

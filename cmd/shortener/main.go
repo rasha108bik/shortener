@@ -7,6 +7,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/rasha108bik/tiny_url/config"
+	"github.com/rasha108bik/tiny_url/internal/router"
 	"github.com/rasha108bik/tiny_url/internal/server"
 	"github.com/rasha108bik/tiny_url/internal/server/handlers"
 	"github.com/rasha108bik/tiny_url/internal/storager"
@@ -35,8 +36,9 @@ func main() {
 	defer str.Close()
 
 	h := handlers.NewHandler(&log, cfg, str)
+	r := router.NewRouterFacade(h)
 
-	err = server.NewServer(h, cfg.ServerAddress, cfg.EnableHTTPS).Start(&log)
+	err = server.NewServer(r.HTTPRoute.Route, r.GRPCRoute, cfg.ServerAddress, cfg.EnableHTTPS).Start(&log)
 	if err != nil {
 		log.Fatal().Err(err)
 	}

@@ -148,6 +148,19 @@ func TestHandlers(t *testing.T) {
 		_, urlParseErr := url.Parse(m.Result)
 		assert.NoErrorf(t, urlParseErr, "cannot parsee URL: %s ", m.Result, err)
 	})
+
+	t.Run("get short urls and users", func(t *testing.T) {
+		request := httptest.NewRequest(http.MethodGet, "/api/internal/stats", nil)
+		w := httptest.NewRecorder()
+		h := http.HandlerFunc(handler.Stats)
+		h(w, request)
+		result := w.Result()
+
+		err = result.Body.Close()
+		require.NoError(t, err)
+
+		assert.Equal(t, http.StatusOK, result.StatusCode)
+	})
 }
 
 func TestHandlersStatusConflict(t *testing.T) {

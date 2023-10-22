@@ -1,12 +1,17 @@
+default: help
+
 LOCAL_BIN=$(CURDIR)/bin
+TIMEOUT = 30s
 
 include bin-deps.mk
-
-default: help
 
 .PHONY: help
 help: ## help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+.PHONY: tools
+tools: ## instal binary
+	cd tools && go mod tidy && go generate -tags tools
 
 .PHONY: app-run
 app-run: ## run app
@@ -14,7 +19,7 @@ app-run: ## run app
 
 .PHONY: unit-test 
 unit-test: ## unit-test 
-	go test -count=1 -v ./...
+	go test -cover -race -timeout $(TIMEOUT) ./... | column -t | sort -r
 
 # .PHONY: mockgen-install
 # mockgen-install: ## mockgen-install
@@ -39,3 +44,7 @@ statichcheck: ## statichcheck
 .PHONY: install-githooks
 install-githooks:
 	cp ./githooks/* .git/hooks
+
+.PHONY: generate-protoc
+generate-protoc:
+	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative tinyurl.proto
