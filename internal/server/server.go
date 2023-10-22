@@ -22,7 +22,6 @@ type server struct {
 
 // NewServer returns a newly initialized http.Server objects
 func NewServer(
-	_ context.Context,
 	httpRoute httpRoute,
 	grpcRoute grpcRoute,
 	serverAddress,

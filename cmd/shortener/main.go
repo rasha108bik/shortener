@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os"
 
@@ -21,8 +20,6 @@ var (
 )
 
 func main() {
-	ctx := context.Background()
-
 	fmt.Printf("Build version: %s\nBuild date: %s\nBuild commit: %s\n",
 		buildVersion, buildDate, buildCommit)
 
@@ -41,7 +38,7 @@ func main() {
 	h := handlers.NewHandler(&log, cfg, str)
 	r := router.NewRouterFacade(h)
 
-	err = server.NewServer(ctx, r.HTTPRoute.Route, r.GRPCRoute, cfg.ServerAddress, cfg.EnableHTTPS).Start(&log)
+	err = server.NewServer(r.HTTPRoute.Route, r.GRPCRoute, cfg.ServerAddress, cfg.EnableHTTPS).Start(&log)
 	if err != nil {
 		log.Fatal().Err(err)
 	}
