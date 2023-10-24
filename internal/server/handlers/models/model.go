@@ -29,4 +29,10 @@ type (
 		CorrelationID string `json:"correlation_id"`
 		ShortURL      string `json:"short_url"`
 	}
+
+	// ResponseStats model for response Stats request.
+	ResponseStats struct {
+		URLs  int `json:"urls"`  // количество сокращённых URL в сервисе
+		Users int `json:"users"` // количество пользователей в сервисе
+	}
 )

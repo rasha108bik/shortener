@@ -152,3 +152,17 @@ func (db *DB) DeleteURLByShortURL(ctx context.Context, shortURLs string) error {
 
 	return nil
 }
+
+// GetCountShortURLAndUsers get count short URLs.
+func (db *DB) GetCountShortURLAndUsers(ctx context.Context) (int, error) {
+	var cntShortURLs int
+	err := db.db.SelectContext(ctx, &cntShortURLs, "SELECT count(*) FROM short_links")
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, sql.ErrNoRows
+		}
+		return 0, err
+	}
+
+	return cntShortURLs, nil
+}

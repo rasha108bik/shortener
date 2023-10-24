@@ -84,3 +84,8 @@ func (m *memDB) DeleteURLByShortURL(_ context.Context, shortURL string) error {
 	delete(m.locations, shortURL)
 	return nil
 }
+
+// GetCountShortURLAndUsers get count short URLs.
+func (m *memDB) GetCountShortURLAndUsers(_ context.Context) (int, error) {
+	return len(m.locations), nil
+}
